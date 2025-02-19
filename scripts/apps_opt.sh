@@ -10,7 +10,8 @@ sudo apt install               \
     gnome-tweaks               \
     playerctl                  \
     luarocks                   \
-    fd-find -y
+    fd-find -y                 \
+    python3.10-venv
 
 sudo npm install -g tree-sitter-cli
 

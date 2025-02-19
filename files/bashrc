@@ -127,12 +127,9 @@ export PS1="${BLUE}mhyde ${GREEN}\W${YELLOW}\$(parse_git_branch)${WHITE} 󰑄  "
 export LANGUAGE=en_US:en
 
 export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:/usr/local/lib"
-export PYTHONPATH="${PYTHONPATH}:$HOME/.local/bin"
 export PATH=$PATH:/usr/local/go/bin
 export PATH=$PATH:$HOME/.neovim/bin
-export PATH=$PATH:$HOME/Documents/sources/flutter/bin
 export PATH=$PATH:$HOME/.local/bin
-export PATH=$PATH:$HOME/Documents/sources/bluebubbles
 
 . "$HOME/.cargo/env"
 set -o vi

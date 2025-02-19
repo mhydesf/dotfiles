@@ -16,7 +16,10 @@ alias vim=nvim
 alias pic="kitty +kitten icat "
 
 # XTERM SSH
-alias ssh='TERM=xterm ssh'
+alias ssh="TERM=xterm ssh"
+
+# Mac Mini Server
+alias mini="ssh misha@Mac-mini"
 
 # zoxide override
 alias cd=z

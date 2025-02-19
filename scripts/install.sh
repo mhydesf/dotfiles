@@ -35,24 +35,3 @@ if [ "$font" == "y" ]; then
 else
     echo "Ignoring FiraMono installation"
 fi
-
-echo "Would you like to install Spotify? [y/N]"
-read spotify
-
-if [ "$spotify" == "y" ]; then
-    echo "Installing Spotify"
-    ./spotify.sh
-else
-    echo "Ignoring Spotify installation"
-fi
-
-echo "Would you like to install VSCode? [y/N]"
-read vscode
-
-if [ "$vscode" == "y" ]; then
-    echo "Installing VSCode"
-    ./code.sh
-else
-    echo "Ignoring VSCode installation"
-fi
-
