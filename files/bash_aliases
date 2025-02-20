@@ -1,5 +1,31 @@
 # /bin/bash
 
+####################
+###  CONTAINERS  ###
+####################
+
+alias vfw="docker run -it -v \"$HOME/Documents/code/VBATFirmware:/home/mikhail/VBATFirmware\" -w /home/mikhail/VBATFirmware vbat_fw /bin/bash"
+
+####################
+###     VENVS    ###
+####################
+
+alias vbat_venv="source $HOME/.venv/vbat/bin/activate"
+
+####################
+### SICK WIT IT  ###
+####################
+
+alias pico="picocom /dev/ttyUSB0 -b 115200 --flow n --parity o --databits 7"
+
+alias vbat_firmware="bash $HOME/Documents/scripts/firmware/vbat_firmware.sh"
+
+alias vbat_fc="bash $HOME/Documents/scripts/firmware/vbat_fc.sh"
+
+####################
+###     OTHER    ###
+####################
+
 # Runs a sequence of cleaning commands to refresh OS
 alias clean_sys=$HOME/.shell/clean_sys.sh
 
@@ -17,9 +43,6 @@ alias pic="kitty +kitten icat "
 
 # XTERM SSH
 alias ssh="TERM=xterm ssh"
-
-# Mac Mini Server
-alias mini="ssh misha@Mac-mini"
 
 # zoxide override
 alias cd=z
