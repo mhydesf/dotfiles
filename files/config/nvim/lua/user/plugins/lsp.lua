@@ -1,160 +1,160 @@
-return { -- LSP Configuration & Plugins
-	'neovim/nvim-lspconfig',
-	dependencies = {
-		-- Automatically install LSPs to stdpath for neovim
-		'williamboman/mason.nvim',
-		'williamboman/mason-lspconfig.nvim',
-		-- Useful status updates for LSP
-		{
-			'j-hui/fidget.nvim',
-			tag="legacy",
-		},
-	},
-	config = function()
-    --  This function gets run when an LSP connects to a particular buffer.
-    local on_attach = function(client, bufnr)
-      local function buf_set_keymap(...) vim.api.nvim_buf_set_keymap(bufnr, ...) end
-      local opts = { noremap=true, silent=true }
+return {
+  {
+    "neovim/nvim-lspconfig", -- still provides default configs; we don't call lspconfig.setup()
+    dependencies = {
+      "williamboman/mason.nvim",
+      "williamboman/mason-lspconfig.nvim",
+      { "j-hui/fidget.nvim", tag = "legacy" },
+      "hrsh7th/cmp-nvim-lsp",
+    },
+    config = function()
+      ---------------------------------------------------------------------------
+      -- Install-only (no auto-start)
+      ---------------------------------------------------------------------------
+      require("mason").setup()
 
-      buf_set_keymap('n', 'gd', '<Cmd>lua vim.lsp.buf.definition()<CR>', opts)
-      buf_set_keymap('n', 'K', '<Cmd>lua vim.lsp.buf.hover()<CR>', opts)
-      buf_set_keymap('n', 'gi', '<cmd>lua vim.lsp.buf.implementation()<CR>', opts)
-      buf_set_keymap('n', '<C-k>', '<cmd>lua vim.lsp.buf.signature_help()<CR>', opts)
-      buf_set_keymap('n', '<space>wa', '<cmd>lua vim.lsp.buf.add_workspace_folder()<CR>', opts)
-      buf_set_keymap('n', '<space>wr', '<cmd>lua vim.lsp.buf.remove_workspace_folder()<CR>', opts)
-      buf_set_keymap('n', '<space>wl', '<cmd>lua print(vim.inspect(vim.lsp.buf.list_workspace_folders()))<CR>', opts)
-      buf_set_keymap('n', '<space>D', '<cmd>lua vim.lsp.buf.type_definition()<CR>', opts)
-      buf_set_keymap('n', '<space>rn', '<cmd>lua vim.lsp.buf.rename()<CR>', opts)
-      buf_set_keymap('n', 'gr', '<cmd>lua vim.lsp.buf.references()<CR>', opts)
-      buf_set_keymap('n', '<space>e', '<cmd>lua vim.lsp.diagnostic.show_line_diagnostics()<CR>', opts)
-      buf_set_keymap('n', '[d', '<cmd>lua vim.lsp.diagnostic.goto_prev()<CR>', opts)
-      buf_set_keymap('n', ']d', '<cmd>lua vim.lsp.diagnostic.goto_next()<CR>', opts)
-      buf_set_keymap('n', '<space>q', '<cmd>lua vim.lsp.diagnostic.set_loclist()<CR>', opts)
-      buf_set_keymap("n", "<space>f", "<cmd>lua vim.lsp.buf.formatting()<CR>", opts)
-    end
+      local mls = require("mason-lspconfig")
+      local servers = {
+        "cmake","dockerls","bashls","jsonls","yamlls","marksman","pyright","lua_ls","clangd",
+      }
 
-		-- Setup mason so it can manage external tooling
-		require('mason').setup()
-
-		local servers = {
-      -- Languages
-      'clangd',
-      'pyright',
-      'lua_ls',
-      'cmake',
-      'dockerls',
-      -- Shell
-      'bashls',
-      -- Data Formats
-      'jsonls',
-      'yamlls',
-      'marksman',
-    }
-
-		-- Ensure the servers above are installed
-		require('mason-lspconfig').setup {
-      ensure_installed = servers,
-		}
-		-- nvim-cmp supports additional completion capabilities
-    local capabilities = require("cmp_nvim_lsp").default_capabilities(vim.lsp.protocol.make_client_capabilities())
-		capabilities = require('cmp_nvim_lsp').default_capabilities(capabilities)
-
-		-- Turn on lsp status information
-		require('fidget').setup()
-
-    for _, server_name in ipairs(servers) do
-      local lspconfig = require('lspconfig')
-      local server = lspconfig[server_name]
-      server.setup({
-        on_attach = on_attach,
-        capabilities = capabilities,
+      -- mason-lspconfig: ensure_installed ONLY; do NOT use setup_handlers here.
+      mls.setup({
+        ensure_installed = servers,
+        automatic_installation = true,
       })
-    end
 
-		-- Make runtime files discoverable to the server
-		local runtime_path = vim.split(package.path, ';')
-		table.insert(runtime_path, 'lua/?.lua')
-		table.insert(runtime_path, 'lua/?/init.lua')
+      ---------------------------------------------------------------------------
+      -- Shared caps
+      ---------------------------------------------------------------------------
+      local capabilities = (pcall(require, "cmp_nvim_lsp") and require("cmp_nvim_lsp").default_capabilities())
+        or vim.lsp.protocol.make_client_capabilities()
 
-    -- Additional LSP Setup
-    -- Pyright (Python)
-    require('lspconfig').pyright.setup {
-      on_attach = on_attach,
-      settings = {
-        pyright = {
-          autoImportCompletion = true,
-        },
-        python = {
-          analysis = {
+      -- Global defaults for all servers
+      vim.lsp.config("*", {
+        capabilities = capabilities,
+        root_markers = { ".git" },
+        -- Force manual start everywhere (prevents any auto-start path)
+        autostart = false,
+      })
+
+      ---------------------------------------------------------------------------
+      -- LspAttach mappings
+      ---------------------------------------------------------------------------
+      vim.api.nvim_create_autocmd("LspAttach", {
+        group = vim.api.nvim_create_augroup("my.lsp.attach", {}),
+        callback = function(args)
+          local b = args.buf
+          local map = function(lhs, rhs) vim.keymap.set("n", lhs, rhs, { buffer = b, silent = true }) end
+          map("gd",  vim.lsp.buf.definition)
+          map("gD",  vim.lsp.buf.declaration)
+          map("gi",  vim.lsp.buf.implementation)
+          map("gr",  vim.lsp.buf.references)
+          map("K",   vim.lsp.buf.hover)
+          map("<space>rn", vim.lsp.buf.rename)
+          map("<space>ca", vim.lsp.buf.code_action)
+        end,
+      })
+
+      ---------------------------------------------------------------------------
+      -- Per-server configs (0.11)
+      ---------------------------------------------------------------------------
+      vim.lsp.config("pyright", {
+        settings = {
+          python = { analysis = {
             autoSearchPaths = true,
-            diagnosticMode = 'openFilesOnly',
+            diagnosticMode = "openFilesOnly",
             useLibraryCodeForTypes = true,
-            typeCheckingMode = 'off',
-            extraPaths = {
-              os.getenv('HOME') .. '/.local/lib/python3.10/site-packages',
+            typeCheckingMode = "off",
+          }},
+        },
+      })
+
+      do
+        local rp = vim.split(package.path, ";")
+        table.insert(rp, "lua/?.lua"); table.insert(rp, "lua/?/init.lua")
+        vim.lsp.config("lua_ls", {
+          settings = {
+            Lua = {
+              runtime = { version = "LuaJIT", path = rp },
+              diagnostics = { globals = { "vim" } },
+              workspace = { checkThirdParty = false, library = vim.api.nvim_get_runtime_file("", true) },
+              telemetry = { enable = false },
             },
           },
-        },
-      },
-    }
-
-    -- Lua
-		require('lspconfig').lua_ls.setup {
-      settings = {
-        Lua = {
-          runtime = {
-            version = 'LuaJIT',
-            path = runtime_path,
-          },
-          diagnostics = {
-            globals = { 'vim' },
-          },
-          workspace = {
-            library = vim.api.nvim_get_runtime_file('', true),
-            checkThirdParty = false,
-          },
-          telemetry = {
-            enable = false
-          },
-        },
-      },
-		}
-
-    -- Clangd
-    local function find_build_dir()
-      local cwd = vim.fn.getcwd()
-      local build_dirs = { "build", "build/debug", "build/release" }
-      for _, dir in ipairs(build_dirs) do
-        local build_dir = cwd .. "/" .. dir
-        if vim.fn.isdirectory(build_dir) == 1 then
-          return build_dir
-        end
+        })
       end
-      return cwd
-    end
 
+      for _, s in ipairs({ "cmake","dockerls","bashls","jsonls","yamlls","marksman" }) do
+        vim.lsp.config(s, {})
+      end
 
-    require('lspconfig').clangd.setup {
-      cmd = { "clangd", "--compile-commands-dir=" .. find_build_dir(), "--log=verbose" },
-      on_attach = on_attach,
-      flags = {
-        debounce_text_changes = 150,
+      -- clangd: single instance + compile_commands picker
+
+      -- vim.lsp.config("clangd", {
+      --   cmd = {
+      --     "clangd",
+      --     "--background-index",
+      --     "--compile-commands-dir=build",
+      --     "--query-driver=/opt/Xilinx/Vitis/*/gnu/aarch64/lin/aarch64-none/bin/aarch64-none-elf-*," ..
+      --                     "/usr/bin/*-linux-gnu-*,/usr/bin/*-linux-gnueabihf-*",
+      --   },
+      --   filetypes = { "c", "cpp", "objc", "objcpp" },
+      --   root_markers = { ".git", "compile_commands.json", "compile_flags.txt" },
+      --   single_file_support = false
+      -- })
+
+      local qd = require("user.plugins.utils.clangd_query_driver").compute_query_driver({
+        root_dir = vim.fn.getcwd(),
+        compile_commands_dir = "build",  -- matches your --compile-commands-dir
+      })
+
+      local cmd = {
+        "clangd",
+        "--background-index",
+        "--compile-commands-dir=build",
       }
-    }
+      if qd then
+        table.insert(cmd, "--query-driver=" .. qd)
+      end
 
-    vim.fn.sign_define('DiagnosticSignError', { text = '', texthl = 'DiagnosticSignError' })
-    vim.fn.sign_define('DiagnosticSignWarn', { text = '', texthl = 'DiagnosticSignWarn' })
-    vim.fn.sign_define('DiagnosticSignInfo', { text = '', texthl = 'DiagnosticSignInfo' })
-    vim.fn.sign_define('DiagnosticSignHint', { text = '', texthl = 'DiagnosticSignHint' })
+      vim.lsp.config("clangd", {
+        cmd = cmd,
+        filetypes = { "c", "cpp", "objc", "objcpp" },
+        root_markers = { ".git", "compile_commands.json", "compile_flags.txt" },
+        single_file_support = false,
+      })
 
-		vim.api.nvim_create_autocmd('FileType', {
-			pattern = 'sh',
-			callback = function()
-				vim.lsp.start({
-					name = 'bash-language-server',
-					cmd = { 'bash-language-server', 'start' },
-				})
-			end,
-		})
-	end
+      ---------------------------------------------------------------------------
+      -- Start exactly once (no duplicates)
+      ---------------------------------------------------------------------------
+      vim.lsp.enable(servers)
+
+      local function stop_lsp(targets)
+        vim.lsp.stop_client(vim.lsp.get_clients())
+      end
+
+      vim.keymap.set("n", "slsp", function()
+        stop_lsp()
+      end, { desc = "Stop configured LSP servers" })
+
+      ---------------------------------------------------------------------------
+      -- Diagnostics UI
+      ---------------------------------------------------------------------------
+      vim.diagnostic.config({
+        signs = {
+          text = {
+            [vim.diagnostic.severity.ERROR] = "",
+            [vim.diagnostic.severity.WARN]  = "",
+            [vim.diagnostic.severity.INFO]  = "",
+            [vim.diagnostic.severity.HINT]  = "",
+          },
+        },
+        virtual_text = true,
+        underline = true,
+        update_in_insert = false,
+        severity_sort = true,
+      })
+    end
+  },
 }

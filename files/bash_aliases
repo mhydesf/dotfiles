@@ -1,33 +1,42 @@
 # /bin/bash
 
-####################
-###  CONTAINERS  ###
-####################
+#########################
+###    CONTAINERS     ###
+#########################
 
-alias vfw="docker run -it -v \"$HOME/Documents/code/VBATFirmware:/home/mikhail/VBATFirmware\" -w /home/mikhail/VBATFirmware vbat_fw /bin/bash"
+alias xilinx-launch="bash /home/mikhail/Documents/scripts/containers/launch.sh xilinx"
 
-####################
-###     VENVS    ###
-####################
+alias vbat-launch="bash /home/mikhail/Documents/scripts/containers/launch.sh vbat"
 
-alias vbat_venv="source $HOME/.venv/vbat/bin/activate"
+alias vfw-launch="bash /home/mikhail/Documents/scripts/containers/launch.sh vfw"
 
-####################
-### SICK WIT IT  ###
-####################
+alias connect="bash /home/mikhail/Documents/scripts/containers/connect.sh"
 
-alias pico="picocom /dev/ttyUSB0 -b 115200 --flow n --parity o --databits 7"
+#########################
+###       VENVS       ###
+#########################
 
-alias vbat_firmware="bash $HOME/Documents/scripts/firmware/vbat_firmware.sh"
+alias vbat-venv="source $HOME/.venv/vbat/bin/activate"
 
-alias vbat_fc="bash $HOME/Documents/scripts/firmware/vbat_fc.sh"
+#########################
+###   SHIELD SPECIAL  ###
+#########################
 
-####################
-###     OTHER    ###
-####################
+alias pico="bash $HOME/Documents/scripts/util/pico.sh"
+
+alias picov="picocom /dev/ttyUSB1 -b 115200 --omap delbs"
+
+alias leafctl="bash $HOME/Documents/scripts/telecho/leafctl.sh"
+
+#########################
+###       OTHER       ###
+#########################
+
+# Run full update script
+alias full-update="sudo $HOME/Documents/scripts/util/full_update.sh"
 
 # Runs a sequence of cleaning commands to refresh OS
-alias clean_sys=$HOME/.shell/clean_sys.sh
+alias clean-sys=$HOME/.shell/clean_sys.sh
 
 # Empty Trash
 alias trash=$HOME/.shell/empty_trash.sh
@@ -51,3 +60,5 @@ alias cd=z
 alias cdi=zi
 
 alias branches='(PIPENV_PIPFILE=$HOME/.shell/clean_branches/Pipfile pipenv run python $HOME/.shell/clean_branches/main.py)'
+
+alias telecho="wine $HOME/.wine_programs/TelEcho/TelEcho.exe 2>>/dev/null &"

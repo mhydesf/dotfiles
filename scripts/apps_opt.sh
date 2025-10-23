@@ -13,7 +13,7 @@ sudo apt install               \
     fd-find -y                 \
     python3.10-venv
 
-sudo npm install -g tree-sitter-cli
+sudo npm install -g tree-sitter-cli markdown-toc
 
 # Install Rust
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh

@@ -33,6 +33,28 @@ keymap("n", "<C-j>", "<C-w>j")
 keymap("n", "<C-k>", "<C-w>k")
 keymap("n", "<C-l>", "<C-w>l")
 
+local fullscreen_state = {
+  is_fullscreen = false,
+  session_data = nil,
+}
+
+function ToggleFullscreen()
+  if not fullscreen_state.is_fullscreen then
+    -- Save current session to a temporary file or in memory
+    fullscreen_state.session_data = vim.fn.execute('mksession! /tmp/nvim_fullscreen.vim')
+
+    -- Make current window fullscreen
+    vim.cmd("only")
+    fullscreen_state.is_fullscreen = true
+  else
+    -- Restore previous session layout
+    vim.cmd("silent! source /tmp/nvim_fullscreen.vim")
+    fullscreen_state.is_fullscreen = false
+  end
+end
+
+vim.keymap.set("n", "<leader>ll", ToggleFullscreen, { silent = true, desc = "Toggle fullscreen buffer" })
+
 -- Resize with arrows
 keymap("n", "<C-Up>", ":resize -2<CR>")
 keymap("n", "<C-Down>", ":resize +2<CR>")
@@ -42,7 +64,7 @@ keymap("n", "<C-Right>", ":vertical resize -2<CR>")
 -- Navigate buffers
 keymap("n", "<TAB>", ":bnext<CR>")
 keymap("n", "<S-TAB>", ":bprevious<CR>")
-keymap("n", "<leader>x", ":bd<CR>")
+keymap("n", "<leader>x", "<cmd>close<CR>")
 
 -- Move text up and down
 keymap("n", "J", ":m .+1<CR>==")
