@@ -91,22 +91,9 @@ return {
 
       -- clangd: single instance + compile_commands picker
 
-      -- vim.lsp.config("clangd", {
-      --   cmd = {
-      --     "clangd",
-      --     "--background-index",
-      --     "--compile-commands-dir=build",
-      --     "--query-driver=/opt/Xilinx/Vitis/*/gnu/aarch64/lin/aarch64-none/bin/aarch64-none-elf-*," ..
-      --                     "/usr/bin/*-linux-gnu-*,/usr/bin/*-linux-gnueabihf-*",
-      --   },
-      --   filetypes = { "c", "cpp", "objc", "objcpp" },
-      --   root_markers = { ".git", "compile_commands.json", "compile_flags.txt" },
-      --   single_file_support = false
-      -- })
-
       local qd = require("user.plugins.utils.clangd_query_driver").compute_query_driver({
         root_dir = vim.fn.getcwd(),
-        compile_commands_dir = "build",  -- matches your --compile-commands-dir
+        compile_commands_dir = "build",
       })
 
       local cmd = {
@@ -124,6 +111,31 @@ return {
         root_markers = { ".git", "compile_commands.json", "compile_flags.txt" },
         single_file_support = false,
       })
+
+      vim.keymap.set("n", "<leader>sc", function()
+        local driver_str = nil
+        local ok, mod = pcall(require, "user.plugins.utils.clangd_query_driver")
+        if ok then
+          driver_str = mod.compute_query_driver({
+            root_dir = vim.fn.getcwd(),
+            compile_commands_dir = "build",
+          })
+        end
+
+        if not driver_str or driver_str == "" then
+          vim.notify("No compile_commands.json found or no compilers detected.",
+            vim.log.levels.WARN, { title = "Clangd" })
+          return
+        end
+
+        local drivers = {}
+        for item in string.gmatch(driver_str, "([^,]+)") do
+          table.insert(drivers, vim.trim(item))
+        end
+
+        local msg = table.concat(drivers, "\n")
+        vim.notify(msg, vim.log.levels.INFO, { title = "Clangd Compilers" })
+      end, { desc = "Show clangd compiler paths" })
 
       ---------------------------------------------------------------------------
       -- Start exactly once (no duplicates)
