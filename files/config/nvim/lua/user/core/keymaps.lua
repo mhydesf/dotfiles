@@ -90,11 +90,15 @@ vim.api.nvim_set_keymap("n", "B", "^", {noremap=false})
 vim.api.nvim_set_keymap("n", "ss", ":noh<CR>", {noremap=true})
 vim.api.nvim_set_keymap("n", "<leader>nf", ":enew<CR>", {noremap=true})
 
-vim.keymap.set('n', '[d', vim.diagnostic.goto_prev)
-vim.keymap.set('n', ']d', vim.diagnostic.goto_next)
 vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float)
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist)
 
 -- Remap for dealing with word wrap
 vim.keymap.set('n', 'k', "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true })
 vim.keymap.set('n', 'j', "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true })
+
+
+vim.keymap.set("n", "<leader>cmc", function()
+  local cache_dir = vim.fn.expand("~/.cache/nvim")
+  vim.fn.delete(cache_dir, "rf")
+end, { noremap = true, silent = true, desc = "Clear Neovim cache (~/.cache/nvim)" })

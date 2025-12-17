@@ -4,7 +4,7 @@ return {
 		require("telescope").load_extension('harpoon')
     require("harpoon").setup({
       menu = {
-        width = vim.api.nvim_win_get_width(0) - 50,
+        width = vim.api.nvim_win_get_width(0) - 80,
       }
     })
 		vim.keymap.set('n', '<leader>sm', ":Telescope harpoon marks<CR>", { desc = 'Harpoon [M]arks' })

@@ -10,7 +10,10 @@
     ~/.config/nvim: files/config/nvim
     ~/.config/kitty: files/config/kitty
     ~/.config/i3: files/config/i3
-    ~/.config/compton.conf: files/config/compton.conf
+    ~/.config/dunst/: files/config/dunst
+    ~/.config/polybar/: files/config/polybar
+    ~/.config/picom/: files/config/picom
+    ~/.config/rofi/: files/config/rofi
     ~/.shell: files/shell
     ~/.vimrc: files/vimrc
     ~/.bashrc: files/bashrc

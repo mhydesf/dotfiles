@@ -1,0 +1,31 @@
+configuration {
+    font: "FiraMono Nerd Font 11";
+    show-icons: true;
+    terminal: "kitty";
+    ssh-client: "ssh";
+    modi: "drun,run,window,ssh";
+
+    display-drun: "";
+    display-window: "";
+    display-run: "";
+    display-ssh: "";
+    display-drun: "";
+    display-combi: "";
+
+    kb-row-up:   "Up,Shift+Tab";
+    kb-row-down: "Down,Tab";
+    kb-row-tab:  "";
+    
+    kb-accept-entry: "Control+j,Control+m,Return,KP_Enter";
+
+    timeout {
+        action: "kb-cancel";
+        delay:  0;
+    }
+    filebrowser {
+        directories-first: true;
+        sorting-method:    "name";
+    }
+}
+
+@theme "theme.rasi"

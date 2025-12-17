@@ -115,10 +115,6 @@ if ! shopt -oq posix; then
   fi
 fi
 
-# Kitty Shell Integration
-if test -n "$KITTY_INSTALLATION_DIR" -a -e "$KITTY_INSTALLATION_DIR/shell-integration/bash/kitty.bash"; then source "$KITTY_INSTALLATION_DIR/shell-integration/bash/kitty.bash"; fi
-
-# TMux
 export EDITOR=nvim
 
 BLUE='\[\033[1;36m\]'
@@ -126,7 +122,7 @@ GREEN='\[\033[32m\]'
 YELLOW='\[\033[33m\]'
 WHITE='\[\033[00m\]'
 
-#  Configure Bash PS1
+# Configure Bash PS1
 parse_git_branch() {
 	git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ (\1)/'
 }

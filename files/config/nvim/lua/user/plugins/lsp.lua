@@ -15,7 +15,7 @@ return {
 
       local mls = require("mason-lspconfig")
       local servers = {
-        "cmake","dockerls","bashls","jsonls","yamlls","marksman","pyright","lua_ls","clangd",
+        "cmake","dockerls","bashls","jsonls","yamlls","marksman","pyright","lua_ls","clangd", "rust_analyzer"
       }
 
       -- mason-lspconfig: ensure_installed ONLY; do NOT use setup_handlers here.
@@ -27,14 +27,17 @@ return {
       ---------------------------------------------------------------------------
       -- Shared caps
       ---------------------------------------------------------------------------
-      local capabilities = (pcall(require, "cmp_nvim_lsp") and require("cmp_nvim_lsp").default_capabilities())
-        or vim.lsp.protocol.make_client_capabilities()
 
-      -- Global defaults for all servers
+      local capabilities = vim.lsp.protocol.make_client_capabilities()
+
+      local ok_cmp, cmp_lsp = pcall(require, "cmp_nvim_lsp")
+      if ok_cmp then
+        capabilities = cmp_lsp.default_capabilities(capabilities)
+      end
+
       vim.lsp.config("*", {
         capabilities = capabilities,
         root_markers = { ".git" },
-        -- Force manual start everywhere (prevents any auto-start path)
         autostart = false,
       })
 
@@ -100,8 +103,11 @@ return {
         "clangd",
         "--background-index",
         "--compile-commands-dir=build",
+        "--header-insertion=never",
+        "--enable-config",
       }
-      if qd then
+
+      if qd and qd ~= "" then
         table.insert(cmd, "--query-driver=" .. qd)
       end
 
@@ -142,7 +148,7 @@ return {
       ---------------------------------------------------------------------------
       vim.lsp.enable(servers)
 
-      local function stop_lsp(targets)
+      local function stop_lsp(_)
         vim.lsp.stop_client(vim.lsp.get_clients())
       end
 

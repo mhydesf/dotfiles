@@ -1,0 +1,217 @@
+/** Base colors (darker, less transparent) */
+* {
+  base00: #0f1115cc;
+  base01: #181a20f0;
+  base02: #22252bf0;
+  base03: #969896;
+  base04: #b4b7b4;
+  base05: #c5c8c6;
+  base06: #e0e0e0;
+  base07: #ffffff;
+  base08: #cc6666;
+  base09: #de935f;
+  base0A: #f0c674;
+  base0B: #b5bd68;
+  base0C: #8abeb7;
+  base0D: #81a2be;
+  base0E: #b294bb;
+  base0F: #a3685a;
+}
+
+/* --- mapping (no per-line contrast, only selected highlighted) --- */
+* {
+    /* bright foreground so text isn't too dark */
+    foreground:                  @base07;
+
+    /* subtle, partially transparent background */
+    background:                  @base00;
+    background-color:            @base00;
+
+    normal-background:           @background;
+    normal-foreground:           @foreground;
+
+    /* alternates same as normal → no striping */
+    alternate-normal-background: @normal-background;
+    alternate-normal-foreground: @normal-foreground;
+
+    active-background:           @normal-background;
+    active-foreground:           @base05;
+    alternate-active-background: @active-background;
+    alternate-active-foreground: @active-foreground;
+
+    urgent-background:           @normal-background;
+    urgent-foreground:           @base0A;
+    alternate-urgent-background: @urgent-background;
+    alternate-urgent-foreground: @urgent-foreground;
+
+    /* selected row: subtle but clear highlight */
+    selected-normal-background:  @base01;
+    selected-normal-foreground:  @base07;
+
+    selected-urgent-background:  @base04;
+    selected-urgent-foreground:  @base09;
+
+    selected-active-background:  @base01;
+    selected-active-foreground:  @foreground;
+
+    bordercolor:                 @base02;
+    border-color:                @bordercolor;
+    separatorcolor:              @bordercolor;
+
+    lightbg:                     @base03;
+    lightfg:                     @base05;
+}
+
+/* --- general layout / typography --- */
+* {
+  spacing: 4;
+  font: "FiraMono Nerd Font 11";
+}
+
+element-icon {
+    size: 3ch;
+}
+
+/* window: darker, rounded */
+window {
+    background-color: @background;
+    border:           2;
+    padding:          6px;
+    border-radius:    14px;
+}
+
+/* main container */
+mainbox {
+    border:  0;
+    padding: 4px;
+}
+
+/* message area */
+message {
+    border:       0;
+    padding:      4px;
+}
+
+/* generic text */
+textbox {
+    text-color: @foreground;
+}
+
+/* --- listview: 8 rows, no scrollbar --- */
+listview {
+    lines:        8;         /* max 8 visible entries */
+    fixed-height: 1;
+    border:       0;
+    spacing:      4px;
+    padding:      4px 0px;
+    scrollbar:    false;     /* hide scrollbar */
+}
+
+/* kill scrollbar visuals just in case */
+scrollbar {
+    width:        0px;
+    border:       0;
+    handle-width: 0px;
+    padding:      0;
+    handle-color: #00000000;
+}
+
+/* list elements */
+element {
+    border:  0;
+    padding: 3px 6px;
+}
+
+element-text {
+    background-color: inherit;
+    text-color:       inherit;
+}
+
+/* normal rows all same background */
+element.normal.normal {
+    background-color: @normal-background;
+    text-color:       @normal-foreground;
+}
+
+element.normal.urgent {
+    background-color: @urgent-background;
+    text-color:       @urgent-foreground;
+}
+
+element.normal.active {
+    background-color: @active-background;
+    text-color:       @active-foreground;
+}
+
+/* only selected row highlighted */
+element.selected.normal {
+    background-color: @selected-normal-background;
+    text-color:       @selected-normal-foreground;
+}
+
+element.selected.urgent {
+    background-color: @selected-urgent-background;
+    text-color:       @selected-urgent-foreground;
+}
+
+element.selected.active {
+    background-color: @selected-active-background;
+    text-color:       @selected-active-foreground;
+}
+
+/* alternates identical to normal → no contrast between lines */
+element.alternate.normal {
+    background-color: @normal-background;
+    text-color:       @normal-foreground;
+}
+
+element.alternate.urgent {
+    background-color: @urgent-background;
+    text-color:       @urgent-foreground;
+}
+
+element.alternate.active {
+    background-color: @active-background;
+    text-color:       @active-foreground;
+}
+
+/* mode switcher / buttons */
+mode-switcher {
+    border:       0;
+}
+
+button.selected {
+    background-color: @selected-normal-background;
+    text-color:       @selected-normal-foreground;
+}
+
+/* --- input bar --- */
+inputbar {
+    spacing:    4;
+    text-color: @normal-foreground;
+    padding:    4px 6px;
+    children:   [ prompt, textbox-prompt-colon, entry, case-indicator ];
+}
+
+prompt {
+    spacing:    0;
+    text-color: @normal-foreground;
+}
+
+textbox-prompt-colon {
+    expand:     false;
+    str:        ":";
+    margin:     0px 0.3em 0em 0em;
+    text-color: @normal-foreground;
+}
+
+entry {
+    spacing:    0;
+    text-color: @normal-foreground;
+}
+
+case-indicator {
+    spacing:    0;
+    text-color: @normal-foreground;
+}
+

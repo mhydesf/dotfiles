@@ -25,6 +25,10 @@ sudo apt install                \
     vim                         \
     ripgrep                     \
     fzf                         \
+    polybar                     \
+    feh                         \
+    rofi                        \
+    blueman                     \
     gettext -y
 
 # Normal Person Applications

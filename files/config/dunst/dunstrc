@@ -1,0 +1,85 @@
+[global]
+    format = "<b>%a</b>\n<span size='small'>%s</span>\n%b"
+
+    ### Appearance ---------------------------------------------------------
+    font = FiraMono Nerd Font 11
+    line_height = 4
+
+    # Window styling
+    padding = 12
+    horizontal_padding = 16
+    separator_height = 2
+
+    frame_width = 2
+    frame_color = "#7E768D"          # main violet border
+    separator_color = frame
+
+    # Colors
+    background = "#1A1A1A"
+    foreground = "#E5E5EA"
+
+    # Subtle transparency (optional: requires a compositor)
+    transparency = 10                # 0–100 (lower = more opaque)
+
+    # Corners
+    corner_radius = 8
+
+    ### Behavior -----------------------------------------------------------
+    follow = mouse
+    word_wrap = yes
+    ignore_newline = no
+    indicate_hidden = yes
+
+    ### Icon Settings ------------------------------------------------------
+    icon_theme = Papirus-Dark
+    max_icon_size = 48
+
+    ### Notification Position ----------------------------------------------
+    geometry = "300x80-20+20"        # width x height offset
+    alignment = left
+    notification_height = 0
+
+    ### Icon Config ----------------------------------------------
+    icon_position = left
+    max_icon_size = 48
+    icon_theme = Papirus-Dark     # or whatever icon theme you use
+    enable_recursive_icon_lookup = true
+
+# --------------------------- URGENCY LEVELS ------------------------------
+
+[urgency_low]
+    background = "#1A1A1A"
+    foreground = "#E5E5EA"
+    frame_color = "#6B6579"          # softer violet
+    timeout = 3
+
+[urgency_normal]
+    background = "#1A1A1A"
+    foreground = "#E5E5EA"
+    frame_color = "#7E768D"          # standard violet
+    timeout = 5
+
+[urgency_critical]
+    background = "#1A1A1A"
+    foreground = "#FFFFFF"
+    frame_color = "#C07A7A"          # softened warm red
+    timeout = 0
+    # Optionally add a subtle blink for critical:
+    # highlight = "#FFC0C0"
+    # highlight_frame = yes
+
+# ===================== APP-SPECIFIC RULES =====================
+
+# Microsoft Teams
+[teams_notifications]
+    appname = "Microsoft Teams"
+    icon = "chrome-ckdeglopgbdgpkmhnmkigpfgebcdbanf-Default"
+    frame_color = "#6B6579"
+    timeout = 5
+
+# Outlook
+[outlook_notifications]
+    appname = "Outlook"
+    icon = "chrome-famdcdojlmjefmhdpbpmekhodagkodei-Default"
+    frame_color = "#7E768D"
+    timeout = 5

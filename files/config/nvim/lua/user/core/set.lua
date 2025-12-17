@@ -28,13 +28,13 @@ vim.opt.pumheight = 10
 vim.opt.smartcase = true
 vim.opt.splitbelow = true
 vim.opt.splitright = true
-vim.opt.timeoutlen = 300
+vim.o.timeoutlen = 300
+vim.o.ttimeoutlen = 0
 vim.opt.writebackup = false
 vim.opt.cursorline = true
 vim.opt.numberwidth = 2
 vim.opt.linebreak = true
 vim.opt.sidescrolloff = 8
-vim.opt.guifont = "monospace:h12"
 vim.opt.whichwrap = "bs<>[]hl"
 
 vim.o.completeopt = 'menuone,noselect'
