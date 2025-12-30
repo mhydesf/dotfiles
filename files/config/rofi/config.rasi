@@ -1,5 +1,4 @@
 configuration {
-    font: "FiraMono Nerd Font 11";
     show-icons: true;
     terminal: "kitty";
     ssh-client: "ssh";

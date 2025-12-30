@@ -30,8 +30,16 @@ return { -- Autocompletion
       },
       completion = { completeopt = 'menu,menuone,noinsert' },
       window = {
-        completion = cmp.config.window.bordered(),
-        documentation = cmp.config.window.bordered(),
+        completion = {
+          border = "rounded",
+          max_width = 60,
+          max_height = 15,
+        },
+        documentation = {
+          border = "rounded",
+          max_width = 60,
+          max_height = 15,
+        },
       },
       mapping = cmp.mapping.preset.insert {
         ['<CR>'] = cmp.mapping.confirm {

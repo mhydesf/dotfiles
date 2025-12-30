@@ -10,8 +10,56 @@ return {
   config = function()
     local telescope = require('telescope')
     local themes    = require('telescope.themes')
+    local actions   = require('telescope.actions')
+    local action_state = require("telescope.actions.state")
+
+    local function smart_tab(prompt_bufnr)
+      local picker = action_state.get_current_picker(prompt_bufnr)
+      if picker.sorting_strategy == "ascending" then
+        actions.move_selection_next(prompt_bufnr)
+      else
+        actions.move_selection_previous(prompt_bufnr)
+      end
+    end
+
+    local function smart_s_tab(prompt_bufnr)
+      local picker = action_state.get_current_picker(prompt_bufnr)
+      if picker.sorting_strategy == "ascending" then
+        actions.move_selection_previous(prompt_bufnr)
+      else
+        actions.move_selection_next(prompt_bufnr)
+      end
+    end
 
     telescope.setup({
+      defaults = {
+        mappings = {
+          i = {
+            ["<Tab>"]   = smart_tab,
+            ["<S-Tab>"] = smart_s_tab,
+          },
+          n = {
+            ["<Tab>"]   = smart_tab,
+            ["<S-Tab>"] = smart_s_tab,
+          },
+        },
+      },
+      pickers = {
+        git_status = {
+          mappings = {
+            i = {
+              ["<Tab>"]   = actions.move_selection_previous,
+              ["<S-Tab>"] = actions.move_selection_next,
+              ["<C-Space>"] = actions.toggle_selection,
+            },
+            n = {
+              ["<Tab>"]   = actions.move_selection_previous,
+              ["<S-Tab>"] = actions.move_selection_next,
+              ["<C-Space>"] = actions.toggle_selection,
+            },
+          },
+        },
+      },
       extensions = {
         undo = {
           use_delta = true,
@@ -21,8 +69,8 @@ return {
           previewer = false,
           sorting_strategy = "ascending",
           layout_config = {
-            width  = 0.6,   -- 60% of screen width
-            height = 0.55,  -- 55% of screen height (tweak to taste)
+            width  = 0.6,
+            height = 0.55,
           },
         }),
       },
@@ -44,6 +92,7 @@ return {
     vim.keymap.set('n', '<leader>fg', require('telescope.builtin').git_status, { desc = '' })
     vim.keymap.set('n', '<leader>sd', require('telescope.builtin').diagnostics, { desc = '[S]earch [D]iagnostics' })
     vim.keymap.set('n', '<leader>?', require('telescope.builtin').oldfiles, { desc = '[?] Find recently opened files' })
+    vim.keymap.set("n", "<leader>u", ":Telescope undo<CR>")
     vim.keymap.set('n', '<leader>sb', function()
       require('telescope.builtin').current_buffer_fuzzy_find(themes.get_dropdown {
         winblend = 10,
@@ -52,8 +101,4 @@ return {
     end, { desc = '[/] Fuzzily search in current buffer]' })
   end,
 
-  -- your extra mappings
-  vim.keymap.set("n", "<leader>u", ":Telescope undo<CR>"),
-  vim.keymap.set("n", "<leader>fr", "<Cmd>lua require('telescope').extensions.recent_files.pick()<CR>"),
-  vim.api.nvim_set_keymap("n", "<Leader><tab>", "<Cmd>lua require('telescope.builtin').commands()<CR>", {noremap=false}),
 }

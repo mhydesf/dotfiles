@@ -1,217 +1,169 @@
-/** Base colors (darker, less transparent) */
+/* Spotlight-glass (dark, transparent, refined) */
+
 * {
-  base00: #0f1115cc;
-  base01: #181a20f0;
-  base02: #22252bf0;
-  base03: #969896;
-  base04: #b4b7b4;
-  base05: #c5c8c6;
-  base06: #e0e0e0;
-  base07: #ffffff;
-  base08: #cc6666;
-  base09: #de935f;
-  base0A: #f0c674;
-  base0B: #b5bd68;
-  base0C: #8abeb7;
-  base0D: #81a2be;
-  base0E: #b294bb;
-  base0F: #a3685a;
+  font: "Inter 11";
+
+  /* glass */
+  bg:        #0b0d12b8;   /* window glass */
+  panel:     #121724c2;   /* search pill */
+  stroke:    #ffffff12;   /* hairline stroke */
+  shadow:    #00000055;
+
+  /* text */
+  fg:        #f4f6fb;
+  fg-muted:  #cbd3e1;
+  fg-dim:    #a8b1c4;
+
+  /* selection */
+  sel-bg:    #ffffff14;   /* subtle highlight, not white */
+  sel-fg:    #ffffff;
+
+  spacing: 10;
 }
 
-/* --- mapping (no per-line contrast, only selected highlighted) --- */
-* {
-    /* bright foreground so text isn't too dark */
-    foreground:                  @base07;
-
-    /* subtle, partially transparent background */
-    background:                  @base00;
-    background-color:            @base00;
-
-    normal-background:           @background;
-    normal-foreground:           @foreground;
-
-    /* alternates same as normal → no striping */
-    alternate-normal-background: @normal-background;
-    alternate-normal-foreground: @normal-foreground;
-
-    active-background:           @normal-background;
-    active-foreground:           @base05;
-    alternate-active-background: @active-background;
-    alternate-active-foreground: @active-foreground;
-
-    urgent-background:           @normal-background;
-    urgent-foreground:           @base0A;
-    alternate-urgent-background: @urgent-background;
-    alternate-urgent-foreground: @urgent-foreground;
-
-    /* selected row: subtle but clear highlight */
-    selected-normal-background:  @base01;
-    selected-normal-foreground:  @base07;
-
-    selected-urgent-background:  @base04;
-    selected-urgent-foreground:  @base09;
-
-    selected-active-background:  @base01;
-    selected-active-foreground:  @foreground;
-
-    bordercolor:                 @base02;
-    border-color:                @bordercolor;
-    separatorcolor:              @bordercolor;
-
-    lightbg:                     @base03;
-    lightfg:                     @base05;
-}
-
-/* --- general layout / typography --- */
-* {
-  spacing: 4;
-  font: "FiraMono Nerd Font 11";
-}
-
-element-icon {
-    size: 3ch;
-}
-
-/* window: darker, rounded */
+/***** WINDOW *****/
 window {
-    background-color: @background;
-    border:           2;
-    padding:          6px;
-    border-radius:    14px;
+  location: center;
+  anchor: center;
+
+  width: 640px;
+
+  /* remove the “thick black border” */
+  border: 0;
+  padding: 14px;
+  border-radius: 18px;
+
+  background-color: @bg;
 }
 
-/* main container */
+/* ensure nothing else reintroduces a border */
 mainbox {
-    border:  0;
-    padding: 4px;
+  border: 0;
+  padding: 0;
+  spacing: 12px;
+  background-color: transparent;
 }
 
-/* message area */
-message {
-    border:       0;
-    padding:      4px;
-}
-
-/* generic text */
-textbox {
-    text-color: @foreground;
-}
-
-/* --- listview: 8 rows, no scrollbar --- */
-listview {
-    lines:        8;         /* max 8 visible entries */
-    fixed-height: 1;
-    border:       0;
-    spacing:      4px;
-    padding:      4px 0px;
-    scrollbar:    false;     /* hide scrollbar */
-}
-
-/* kill scrollbar visuals just in case */
-scrollbar {
-    width:        0px;
-    border:       0;
-    handle-width: 0px;
-    padding:      0;
-    handle-color: #00000000;
-}
-
-/* list elements */
-element {
-    border:  0;
-    padding: 3px 6px;
-}
-
-element-text {
-    background-color: inherit;
-    text-color:       inherit;
-}
-
-/* normal rows all same background */
-element.normal.normal {
-    background-color: @normal-background;
-    text-color:       @normal-foreground;
-}
-
-element.normal.urgent {
-    background-color: @urgent-background;
-    text-color:       @urgent-foreground;
-}
-
-element.normal.active {
-    background-color: @active-background;
-    text-color:       @active-foreground;
-}
-
-/* only selected row highlighted */
-element.selected.normal {
-    background-color: @selected-normal-background;
-    text-color:       @selected-normal-foreground;
-}
-
-element.selected.urgent {
-    background-color: @selected-urgent-background;
-    text-color:       @selected-urgent-foreground;
-}
-
-element.selected.active {
-    background-color: @selected-active-background;
-    text-color:       @selected-active-foreground;
-}
-
-/* alternates identical to normal → no contrast between lines */
-element.alternate.normal {
-    background-color: @normal-background;
-    text-color:       @normal-foreground;
-}
-
-element.alternate.urgent {
-    background-color: @urgent-background;
-    text-color:       @urgent-foreground;
-}
-
-element.alternate.active {
-    background-color: @active-background;
-    text-color:       @active-foreground;
-}
-
-/* mode switcher / buttons */
-mode-switcher {
-    border:       0;
-}
-
-button.selected {
-    background-color: @selected-normal-background;
-    text-color:       @selected-normal-foreground;
-}
-
-/* --- input bar --- */
+/***** INPUT PILL *****/
 inputbar {
-    spacing:    4;
-    text-color: @normal-foreground;
-    padding:    4px 6px;
-    children:   [ prompt, textbox-prompt-colon, entry, case-indicator ];
+  border: 1px;
+  border-color: @stroke;
+
+  border-radius: 14px;
+  padding: 10px 12px;
+  spacing: 10px;
+
+  background-color: @panel;
+  text-color: @fg;
+
+  children: [ prompt, entry ];
 }
 
 prompt {
-    spacing:    0;
-    text-color: @normal-foreground;
-}
-
-textbox-prompt-colon {
-    expand:     false;
-    str:        ":";
-    margin:     0px 0.3em 0em 0em;
-    text-color: @normal-foreground;
+  enabled: true;
+  str: ""; /* magnifier (Nerd Font) */
+  text-color: @fg-dim;
 }
 
 entry {
-    spacing:    0;
-    text-color: @normal-foreground;
+  background-color: transparent;
+  text-color: @fg;
+  placeholder: "Search";
+  placeholder-color: @fg-dim;
 }
 
-case-indicator {
-    spacing:    0;
-    text-color: @normal-foreground;
+/***** LIST (this is where the “shitty white” usually leaks in) *****/
+listview {
+  border: 0;
+  padding: 2px;
+  spacing: 6px;
+  lines: 8;
+  fixed-height: true;
+  scrollbar: false;
+
+  background-color: transparent;
 }
 
+/* belt-and-suspenders: nuke any leftover white surfaces */
+message, textbox, scrollbar, mode-switcher, button {
+  background-color: transparent;
+  border: 0;
+}
+
+/***** ROWS *****/
+element {
+  border: 0;
+  padding: 9px 10px;
+  border-radius: 12px;
+
+  /* IMPORTANT: keep rows transparent so the window glass shows through */
+  background-color: transparent;
+  text-color: @fg-muted;
+}
+
+element-icon {
+  size: 1.1em;
+  vertical-align: 0.5;
+  margin: 0px 8px 0px 2px;
+}
+
+element-text {
+  background-color: transparent;
+  text-color: inherit;
+}
+
+/* Explicitly define ALL states so nothing falls back to a white default */
+element.normal.normal,
+element.normal.active,
+element.normal.urgent,
+element.alternate.normal,
+element.alternate.active,
+element.alternate.urgent {
+  background-color: transparent;
+  text-color: @fg-muted;
+}
+
+/* Selection: subtle translucent highlight with visible text */
+element.selected.normal,
+element.selected.active,
+element.selected.urgent {
+  background-color: @sel-bg;
+  text-color: @sel-fg;
+}
+
+/* Optional: make active slightly brighter without changing bg */
+element.normal.active,
+element.alternate.active {
+  text-color: @fg;
+}
+
+/* --- ICON TRANSPARENCY FIX --- */
+
+/* Icon widget itself */
+element-icon {
+  background-color: transparent;
+  text-color: inherit;
+  size: 1.1em;
+  vertical-align: 0.5;
+}
+
+/* Force transparency across ALL element states */
+element-icon.normal,
+element-icon.active,
+element-icon.urgent,
+element-icon.selected,
+element-icon.alternate {
+  background-color: transparent;
+}
+
+/* Also kill background inheritance from parent elements */
+element,
+element-text,
+element-icon {
+  background-color: transparent;
+}
+
+/* GTK icon fallback surfaces sometimes paint white */
+* {
+  icon-theme: "Papirus-Dark"; /* or any dark icon theme you use */
+}

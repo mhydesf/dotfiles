@@ -14,7 +14,10 @@ wget https://github.com/ryanoasis/nerd-fonts/releases/download/v3.0.2/FiraMono.z
 unzip FiraMono.zip
 
 wget https://github.com/ryanoasis/nerd-fonts/releases/download/v3.4.0/Meslo.zip
-untip Meslo.zip
+unzip Meslo.zip
+
+wget https://github.com/ryanoasis/nerd-fonts/releases/download/v3.4.0/RobotoMono.zip
+unzip RobotoMono.zip
 
 # Copy all font files to created DIR
 cp *.otf $DIR

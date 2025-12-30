@@ -6,10 +6,6 @@
 
 alias xilinx-launch="bash /home/mikhail/Documents/scripts/containers/launch.sh xilinx"
 
-alias vbat-launch="bash /home/mikhail/Documents/scripts/containers/launch.sh vbat"
-
-alias vfw-launch="bash /home/mikhail/Documents/scripts/containers/launch.sh vfw"
-
 alias connect="bash /home/mikhail/Documents/scripts/containers/connect.sh"
 
 #########################

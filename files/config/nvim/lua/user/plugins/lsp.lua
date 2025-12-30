@@ -143,6 +143,25 @@ return {
         vim.notify(msg, vim.log.levels.INFO, { title = "Clangd Compilers" })
       end, { desc = "Show clangd compiler paths" })
 
+      local function on_attach(_, bufnr)
+        -- Format via rust-analyzer if you want (or use rustfmt via null-ls/conform)
+        -- client.server_capabilities.documentFormattingProvider = true
+
+        -- Useful rust buffer mappings
+        local map = function(mode, lhs, rhs)
+          vim.keymap.set(mode, lhs, rhs, { buffer = bufnr, silent = true })
+        end
+        map("n", "<leader>ca", vim.lsp.buf.code_action)
+        map("n", "K", vim.lsp.buf.hover)
+        map("n", "gd", vim.lsp.buf.definition)
+      end
+
+      vim.lsp.config("rust_analyzer", {
+        capabilities = capabilities,
+        on_attach = on_attach,
+        root_markers = { "Cargo.toml", "rust-project.json", ".git" },
+      })
+
       ---------------------------------------------------------------------------
       -- Start exactly once (no duplicates)
       ---------------------------------------------------------------------------
