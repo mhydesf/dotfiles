@@ -1,0 +1,49 @@
+{
+  "positionX": "right",
+  "positionY": "top",
+  "layer": "overlay",
+
+  "control-center-layer": "top",
+  "control-center-positionX": "right",
+  "control-center-positionY": "top",
+
+  "fit-to-screen": true,
+  "relative-timestamps": true,
+
+  "notification-window": {
+    "monitor": 0,
+    "follow": "none",
+    "anchor": "top-right",
+    "margin-top": 10,
+    "margin-right": 10,
+    "margin-bottom": 10,
+    "margin-left": 10
+  },
+
+  "timeout": 3,
+  "timeout-low": 3,
+  "timeout-normal": 3,
+  "timeout-critical": 0,
+
+  "widgets": [
+    "title",
+    "dnd",
+    "notifications"
+  ],
+
+  "widget-config": {
+    "title": {
+      "text": "Notifications",
+      "clear-all-button": true,
+      "button-text": "Clear"
+    },
+    "dnd": {
+      "text": "Do Not Disturb"
+    },
+    "notifications": {
+      "all": true,
+      "per-app": false
+    }
+  }
+}
+

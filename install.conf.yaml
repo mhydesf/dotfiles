@@ -10,15 +10,17 @@
     ~/.tmux.conf: files/tmux.conf
     ~/.config/nvim: files/config/nvim
     ~/.config/kitty: files/config/kitty
-    ~/.config/i3: files/config/i3
-    ~/.config/dunst/: files/config/dunst
-    ~/.config/polybar/: files/config/polybar
-    ~/.config/picom/: files/config/picom
+    ~/.config/waybar: files/config/waybar
+    ~/.config/hypr: files/config/hypr
     ~/.config/rofi/: files/config/rofi
+    ~/.config/swaync: files/config/swaync
+    ~/.config/Thunar: files/config/Thunar
+    ~/.config/yazi: files/config/yazi
     ~/.shell: files/shell
     ~/.vimrc: files/vimrc
     ~/.bashrc: files/bashrc
     ~/.bash_aliases: files/bash_aliases
+    ~/Pictures/Wallpapers: img
 
 - create:
     - ~/.vim/undo-history

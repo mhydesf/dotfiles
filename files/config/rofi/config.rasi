@@ -3,6 +3,7 @@ configuration {
     terminal: "kitty";
     ssh-client: "ssh";
     modi: "drun,run,window,ssh";
+    drun-display-format: "{name}";
 
     display-drun: "";
     display-window: "";
@@ -11,9 +12,9 @@ configuration {
     display-drun: "";
     display-combi: "";
 
-    kb-row-up:   "Up,Shift+Tab";
-    kb-row-down: "Down,Tab";
-    kb-row-tab:  "";
+    // kb-row-up:   "Up,Shift+Tab";
+    // kb-row-down: "Down,Tab";
+    // kb-row-tab:  "";
     
     kb-accept-entry: "Control+j,Control+m,Return,KP_Enter";
 

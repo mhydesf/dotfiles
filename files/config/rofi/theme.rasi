@@ -4,9 +4,9 @@
   font: "Inter 11";
 
   /* glass */
-  bg:        #0b0d12b8;   /* window glass */
-  panel:     #121724c2;   /* search pill */
-  stroke:    #ffffff12;   /* hairline stroke */
+  bg:        #0b0d12e0;
+  panel:     #121724ee;
+  stroke:    #ffffff18;
   shadow:    #00000055;
 
   /* text */
@@ -15,7 +15,7 @@
   fg-dim:    #a8b1c4;
 
   /* selection */
-  sel-bg:    #ffffff14;   /* subtle highlight, not white */
+  sel-bg:    #ffffff14;
   sel-fg:    #ffffff;
 
   spacing: 10;

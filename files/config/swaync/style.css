@@ -1,0 +1,159 @@
+/* ===== Palette (match Waybar) ===== */
+@define-color bg        #1A1A1A;
+@define-color bg_alt    #242424;
+@define-color fg        #E7E7F2;
+@define-color fg_alt    #BCB9D4;
+
+@define-color primary   #9A88C0;
+@define-color secondary #7C6A98;
+@define-color alert     #C97A7A;
+@define-color disabled  #686477;
+
+/* pill look like your bar */
+@define-color pill_bg        alpha(@bg_alt, 0.95);
+@define-color pill_bd        alpha(@primary, 0.35);
+@define-color pill_bg_hover  alpha(@bg_alt, 0.98);
+@define-color pill_bd_hover  alpha(@primary, 0.80);
+@define-color pill_bg_focus  alpha(@primary, 0.25);
+@define-color pill_bd_focus  alpha(@primary, 0.75);
+
+/* ===== Global ===== */
+* {
+  font-family: "RobotoMono Nerd Font", "FiraMono Nerd Font";
+  font-size: 11px;
+  font-weight: 500;
+  border: none;
+  border-radius: 0;
+}
+
+/* ===== Notification popups ===== */
+.notification {
+  background: @pill_bg;
+  color: @fg;
+  border: 1px solid @pill_bd;
+  border-radius: 14px;
+  padding: 10px;
+  margin: 8px;
+  box-shadow: none;
+}
+
+.notification:hover {
+  background: @pill_bg_hover;
+  border: 1px solid @pill_bd_hover;
+}
+
+.notification.critical {
+  border: 1px solid alpha(@alert, 0.60);
+}
+
+.notification-content {
+  padding: 0;
+}
+
+.summary {
+  color: @fg;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.body {
+  color: @fg_alt;
+  margin-top: 4px;
+}
+
+/* icon + image */
+.image {
+  border-radius: 12px;
+  margin-right: 10px;
+}
+
+.app-icon {
+  margin-right: 10px;
+  opacity: 0.9;
+}
+
+/* actions */
+.actions {
+  margin-top: 8px;
+}
+
+.action-button {
+  background: alpha(@bg, 0.65);
+  color: @fg;
+  border: 1px solid alpha(@secondary, 0.35);
+  border-radius: 999px;
+  padding: 4px 10px;
+  margin-right: 6px;
+}
+
+.action-button:hover {
+  background: @pill_bg_hover;
+  border: 1px solid @pill_bd_hover;
+}
+
+/* ===== Control center ===== */
+.control-center {
+  background: alpha(@bg, 0.98);
+  color: @fg;
+  border: 1px solid alpha(@primary, 0.20);
+  border-radius: 18px;
+  padding: 12px;
+}
+
+.control-center .widget-title {
+  color: @fg;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.control-center .widget-title > button {
+  background: @pill_bg;
+  color: @fg;
+  border: 1px solid @pill_bd;
+  border-radius: 999px;
+  padding: 4px 10px;
+}
+
+.control-center .widget-title > button:hover {
+  background: @pill_bg_hover;
+  border: 1px solid @pill_bd_hover;
+}
+
+.notification-row {
+  margin: 6px 0;
+}
+
+.notification-row:focus,
+.notification-row:selected {
+  outline: none;
+  background: transparent;
+}
+
+/* close button */
+.close-button {
+  background: transparent;
+  color: @fg_alt;
+  border-radius: 999px;
+  padding: 2px 6px;
+  opacity: 0.85;
+}
+
+.close-button:hover {
+  background: alpha(@bg_alt, 0.9);
+  color: @fg;
+}
+
+/* dnd / toggles area (if you enable widgets) */
+.widget {
+  background: @pill_bg;
+  border: 1px solid @pill_bd;
+  border-radius: 14px;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+.widget:hover {
+  background: @pill_bg_hover;
+  border: 1px solid @pill_bd_hover;
+}
+

@@ -131,7 +131,12 @@ export PS1="${BLUE}mhyde ${GREEN}\W${YELLOW}\$(parse_git_branch)${WHITE} 󰑄  "
 export LANGUAGE=en_US:en
 
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
-export PATH="$HOME/.local/bin:$HOME/.neovim/bin:/opt/CMake/bin:/usr/local/go/bin:$PATH"
+export PATH="$HOME/.local/bin:$PATH"
+export PATH="$HOME/.neovim/bin:$PATH"
+export PATH=/opt/CMake/bin:$PATH
+export PATH=/usr/local/go/bin:$PATH
+
+export XDG_DATA_DIRS="$HOME/.local/share/flatpak/exports/share:/var/lib/flatpak/exports/share:${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
 
 . "$HOME/.cargo/env"
 
@@ -141,3 +146,12 @@ eval "$(zoxide init bash)"
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+y() {
+  local tmp="$(mktemp -t "yazi-cwd.XXXXXX")" cwd
+  yazi "$@" --cwd-file="$tmp"
+  if cwd="$(cat -- "$tmp")" && [ -n "$cwd" ] && [ "$cwd" != "$PWD" ]; then
+    cd -- "$cwd"
+  fi
+  rm -f -- "$tmp"
+}

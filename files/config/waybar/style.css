@@ -1,0 +1,257 @@
+@define-color bg        #1A1A1A;
+@define-color bg_alt    #242424;
+@define-color fg        #E7E7F2;
+@define-color fg_alt    #BCB9D4;
+
+@define-color primary   #9A88C0;
+@define-color secondary #7C6A98;
+@define-color alert     #C97A7A;
+@define-color disabled  #686477;
+
+@define-color pill_bg        alpha(@bg_alt, 0.80);
+@define-color pill_bd        alpha(@primary, 0.25);
+@define-color pill_bd_hover  alpha(@primary, 0.70);
+@define-color pill_bg_hover  alpha(@bg_alt, 0.92);
+@define-color pill_bd_focus  alpha(@primary, 0.55);
+@define-color pill_bg_focus  alpha(@primary, 0.10);
+
+* {
+  border: none;
+  border-radius: 0;
+  font-family: "RobotoMono Nerd Font", "FiraMono Nerd Font";
+  font-size: 12px;
+  font-weight: 500;
+  min-height: 0;
+}
+
+window#waybar {
+  background: @bg;
+  color: @fg;
+  padding: 0 8px;
+}
+
+/* === Pill modules === */
+#custom-notifications,
+#workspaces,
+#window,
+#tray,
+#network,
+#audio,             /* audio group pill instead of #pulseaudio */
+#custom-memory,
+#custom-cpu,
+#battery,
+#clock,
+#bluetooth,
+#custom-expand-icon,
+#custom-power {
+  margin: 4px 0px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: @pill_bg;
+  border: 1px solid @pill_bd;
+  color: @fg;
+}
+
+#custom-notifications { margin-left: 4px; }
+#custom-power         { margin-right: 4px; }
+
+#custom-notifications,
+#custom-power,
+#workspaces {
+  padding: 2px 8px;
+}
+
+#custom-power {
+  padding-left: 6px;
+  padding-right: 9px;
+}
+
+#audio {
+  padding-left: 10px;
+  padding-right: 2px;
+}
+
+#network {
+  padding-left: 6px;
+  padding-right: 10px;
+}
+
+/* Power + network button cleanup */
+#custom-power > button,
+#network > button {
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  border: none;
+  border-radius: 999px;
+  min-width: 0;
+}
+
+#custom-power > button > label,
+#network > button > label,
+#custom-power > label,
+#network > label {
+  padding: 0;
+  margin: 0;
+}
+
+#custom-power,
+#custom-power label,
+#custom-power button {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+/* === Workspaces === */
+#workspaces button {
+  padding: 0 8px;
+  margin: 0 3px;
+  border-radius: 999px;
+  color: @fg_alt;
+  background: transparent;
+}
+
+#workspaces button.active {
+  color: @primary;
+  background: @pill_bg_focus;
+  border: 1px solid @pill_bd_focus;
+}
+
+#workspaces button.urgent {
+  color: @alert;
+  background: alpha(@alert, 0.12);
+  border: 1px solid alpha(@alert, 0.55);
+}
+
+#workspaces button:nth-child(1),
+#workspaces button:nth-child(1).active { color: #89b4fa; }
+#workspaces button:nth-child(2),
+#workspaces button:nth-child(2).active { color: #fab387; }
+#workspaces button:nth-child(3),
+#workspaces button:nth-child(3).active { color: #a6e3a1; }
+#workspaces button:nth-child(4),
+#workspaces button:nth-child(4).active { color: #f5c2e7; }
+#workspaces button:nth-child(5),
+#workspaces button:nth-child(5).active { color: #f9e2af; }
+#workspaces button:nth-child(6),
+#workspaces button:nth-child(6).active { color: #94e2d5; }
+#workspaces button:nth-child(7),
+#workspaces button:nth-child(7).active { color: #cba6f7; }
+#workspaces button:nth-child(8),
+#workspaces button:nth-child(8).active { color: #eba0ac; }
+
+#clock {
+  border: 1px solid alpha(@primary, 0.40);
+}
+
+/* === Network / audio states === */
+#network.disconnected,
+#pulseaudio.muted {
+  color: @disabled;
+  border: 1px solid alpha(@disabled, 0.35);
+}
+
+/* === Audio group: pill containing icon + slider === */
+
+/* Don’t double-style inner modules; they live inside the pill */
+#audio > * {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: none;
+}
+
+/* Reset inner module backgrounds */
+#pulseaudio,
+#pulseaudio-slider {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: none;
+}
+
+/* Slider "collapsed" by default */
+#pulseaudio-slider {
+  opacity: 0;
+  margin-left: 0;
+}
+
+/* On hover over the pill, reveal slider and give it some space */
+#audio:hover #pulseaudio-slider {
+  opacity: 1;
+  margin-left: 6px;
+}
+
+/* Slider visuals */
+#pulseaudio-slider trough {
+  min-width: 0;
+  min-height: 6px;
+  border-radius: 999px;
+  background-color: alpha(@bg_alt, 0.8);
+}
+
+/* Wider trough only when hovered (so pill feels like it expands) */
+#audio:hover #pulseaudio-slider trough {
+  min-width: 70px;
+}
+
+#pulseaudio-slider highlight {
+  border-radius: 999px;
+  background-color: @primary;
+}
+
+#pulseaudio-slider slider {
+  min-width: 10px;
+  min-height: 10px;
+  margin: -8px;
+  border-radius: 999px;
+  background: @fg;
+  border: 1px solid alpha(@bg_alt, 0.6);
+  box-shadow: none;
+}
+
+/* === Battery states === */
+#battery.charging {
+  color: @primary;
+  border: 1px solid alpha(@primary, 0.50);
+}
+
+#battery.warning {
+  color: @secondary;
+  border: 1px solid alpha(@secondary, 0.55);
+}
+
+#battery.critical {
+  color: @alert;
+  border: 1px solid alpha(@alert, 0.60);
+}
+
+/* === Tray === */
+#tray > .passive { opacity: 0.6; }
+
+#tray > .needs-attention {
+  border: 1px solid alpha(@alert, 0.6);
+  background: alpha(@alert, 0.12);
+}
+
+/* === Bluetooth states === */
+#bluetooth.disabled,
+#bluetooth.no-controller {
+  color: @disabled;
+  border: 1px solid alpha(@disabled, 0.35);
+}
+
+#network:hover,
+#audio:hover,
+#custom-memory:hover,
+#custom-cpu:hover,
+#battery:hover,
+#clock:hover,
+#tray:hover,
+#custom-notifications:hover,
+#bluetooth:hover,
+#custom-expand-icon:hover,
+#custom-power:hover {
+  border: 1px solid @pill_bd_hover;
+  background: @pill_bg_hover;
+}

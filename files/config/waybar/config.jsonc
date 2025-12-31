@@ -1,0 +1,159 @@
+{
+  "reload_style_on_change": true,
+  "layer": "bottom",
+  "position": "bottom",
+  "height": 30,
+  "spacing": 5,
+
+  "modules-left": [
+    "custom/notifications",
+    "hyprland/workspaces"
+  ],
+  "modules-center": [
+    "clock"
+  ],
+  "modules-right": [
+    "custom/memory",
+    "custom/cpu",
+    "bluetooth",
+    "network",
+    "group/audio",
+    "battery",
+    "group/tray-expander",
+    "custom/power"
+  ],
+
+  "custom/notifications": {
+    "exec": "swaync-client -swb",
+    "return-type": "json",
+    "format": "{icon}",
+    "format-icons": {
+      "notification": "󱅫",
+      "none": "󰂚",
+      "dnd-notification": "󱅫",
+      "dnd-none": "󰂛"
+    },
+    "on-click": "swaync-client -t",
+    "on-click-right": "swaync-client -C",
+    "tooltip": false
+  },
+
+  "hyprland/workspaces": {
+    "on-click": "activate",
+    "sort-by-number": true,
+    "persistent-workspaces": { "*": 8 },
+    "format": "{icon}",
+    "format-icons": {
+      "1": "󰛰",
+      "2": "",
+      "3": "",
+      "4": "󰗃",
+      "default": ""
+    }
+  },
+
+  "custom/power": {
+    "format": "⏻",
+    "tooltip": false,
+    // show GTK menu when clicking the module
+    "menu": "on-click",
+    // use a *full path* – some versions don't expand ~ or $HOME
+    "menu-file": "/home/misha/.config/waybar/menu/power_menu.xml",
+    "menu-actions": {
+      "lock":     "hyprctl dispatch exec hyprlock",
+      "sleep":    "systemctl suspend",
+      "reboot":   "systemctl reboot",
+      "poweroff": "systemctl poweroff",
+      "logout":   "hyprctl dispatch exit"
+  }
+  },
+
+  "clock": {
+    "format": "󰥔  {:%A, %B %d  %I:%M %p}"
+  },
+
+  "custom/memory": {
+    "exec": "~/.config/waybar/scripts/mem_spark.sh",
+    "interval": 1,
+    "return-type": "json",
+    "tooltip": true
+  },
+
+  "custom/cpu": {
+    "exec": "~/.config/waybar/scripts/cpu_spark.sh",
+    "interval": 1,
+    "return-type": "json",
+    "tooltip": true
+  },
+
+  "bluetooth": {
+    "format": "",
+    "format-disabled": "󰂲",
+    "format-connected": "󰂱",
+    "format-no-controller": "",
+    "tooltip-format": "Devices connected: {num_connections}",
+    "on-click": "blueman-manager"
+  },
+
+  "network": {
+    "format-wifi": "󰤨",
+    "format-ethernet": "󰈀",
+    "format-disconnected": "󰤭",
+    "tooltip-format-wifi": "{ifname}\n{essid}\nSignal: {signalStrength}%\nIP: {ipaddr}\nGW: {gwaddr}",
+    "tooltip-format-ethernet": "{ifname}\nIP: {ipaddr}\nGW: {gwaddr}",
+    "interval": 5
+  },
+
+"group/audio": {
+  "orientation": "horizontal",
+  "modules": [
+    "pulseaudio",
+    "pulseaudio/slider"
+  ]
+},
+
+"pulseaudio": {
+  "format": "{icon}  {volume}%",
+  "format-muted": " muted",
+  "format-icons": {
+    "default": ["", "", ""]
+  },
+  "scroll-step": 2,
+  "on-click": "pavucontrol"
+},
+
+"pulseaudio/slider": {
+  "min": 0,
+  "max": 100,
+  "orientation": "horizontal"
+},
+  
+  "battery": {
+    "states": { "warning": 0.20, "critical": 0.10 },
+    "format": "{icon}  {capacity}%",
+    "format-charging": "  {capacity}%",
+    "format-full": "{icon}  {capacity}%",
+    "format-icons": ["", "", "", "", ""],
+    "interval": 10
+  },
+
+  "group/tray-expander": {
+    "orientation": "inherit",
+    "drawer": {
+      "transition-duration": 600,
+      "children-class": "tray-group-item"
+    },
+    "modules": ["custom/expand-icon", "tray"]
+  },
+
+  "custom/expand-icon": {
+    "format": "",
+    "tooltip": false
+  },
+
+  "tray": {
+    "icon-size": 12,
+    "spacing": 17
+  }
+}
+
