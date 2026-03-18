@@ -2,7 +2,7 @@
 set -euo pipefail
 
 SPARK=(▁ ▂ ▃ ▄ ▅ ▆ ▇ █)
-HIST_LEN=16
+HIST_LEN=6
 STATE_DIR="${XDG_RUNTIME_DIR:-/tmp}/waybar-sparks"
 MEM_STATE="$STATE_DIR/mem_hist"
 

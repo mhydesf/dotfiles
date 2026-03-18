@@ -3,7 +3,7 @@ set -euo pipefail
 
 # spark chars (low->high)
 SPARK=(▁ ▂ ▃ ▄ ▅ ▆ ▇ █)
-HIST_LEN=16
+HIST_LEN=6
 STATE_DIR="${XDG_RUNTIME_DIR:-/tmp}/waybar-sparks"
 CPU_STATE="$STATE_DIR/cpu_hist"
 

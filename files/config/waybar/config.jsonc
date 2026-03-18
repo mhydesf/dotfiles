@@ -19,8 +19,7 @@
     "network",
     "group/audio",
     "battery",
-    "group/tray-expander",
-    "custom/power"
+    "group/tray-expander"
   ],
 
   "custom/notifications": {
@@ -44,7 +43,7 @@
     "persistent-workspaces": { "*": 8 },
     "format": "{icon}",
     "format-icons": {
-      "1": "󰛰",
+      "1": "󰭹",
       "2": "",
       "3": "",
       "4": "󰗃",
@@ -52,38 +51,24 @@
     }
   },
 
-  "custom/power": {
-    "format": "⏻",
-    "tooltip": false,
-    // show GTK menu when clicking the module
-    "menu": "on-click",
-    // use a *full path* – some versions don't expand ~ or $HOME
-    "menu-file": "/home/misha/.config/waybar/menu/power_menu.xml",
-    "menu-actions": {
-      "lock":     "hyprctl dispatch exec hyprlock",
-      "sleep":    "systemctl suspend",
-      "reboot":   "systemctl reboot",
-      "poweroff": "systemctl poweroff",
-      "logout":   "hyprctl dispatch exit"
-  }
-  },
-
   "clock": {
-    "format": "󰥔  {:%A, %B %d  %I:%M %p}"
+    "format": "󰥔  {:%A %d  %I:%M %p}"
   },
 
   "custom/memory": {
     "exec": "~/.config/waybar/scripts/mem_spark.sh",
     "interval": 1,
     "return-type": "json",
-    "tooltip": true
+    "tooltip": true,
+    "on-click": "~/.local/bin/launch-tui btop"
   },
 
   "custom/cpu": {
     "exec": "~/.config/waybar/scripts/cpu_spark.sh",
     "interval": 1,
     "return-type": "json",
-    "tooltip": true
+    "tooltip": true,
+    "on-click": "~/.local/bin/launch-tui btop"
   },
 
   "bluetooth": {
@@ -92,7 +77,7 @@
     "format-connected": "󰂱",
     "format-no-controller": "",
     "tooltip-format": "Devices connected: {num_connections}",
-    "on-click": "blueman-manager"
+    "on-click": "~/.local/bin/launch-tui bluetui"
   },
 
   "network": {
@@ -101,32 +86,33 @@
     "format-disconnected": "󰤭",
     "tooltip-format-wifi": "{ifname}\n{essid}\nSignal: {signalStrength}%\nIP: {ipaddr}\nGW: {gwaddr}",
     "tooltip-format-ethernet": "{ifname}\nIP: {ipaddr}\nGW: {gwaddr}",
-    "interval": 5
+    "interval": 5,
+    "on-click": "~/.local/bin/launch-impala"
   },
 
-"group/audio": {
-  "orientation": "horizontal",
-  "modules": [
-    "pulseaudio",
-    "pulseaudio/slider"
-  ]
-},
-
-"pulseaudio": {
-  "format": "{icon}  {volume}%",
-  "format-muted": " muted",
-  "format-icons": {
-    "default": ["", "", ""]
+  "group/audio": {
+    "orientation": "horizontal",
+    "modules": [
+      "pulseaudio",
+      "pulseaudio/slider"
+    ]
   },
-  "scroll-step": 2,
-  "on-click": "pavucontrol"
-},
 
-"pulseaudio/slider": {
-  "min": 0,
-  "max": 100,
-  "orientation": "horizontal"
-},
+  "pulseaudio": {
+    "format": "{icon}  {volume}%",
+    "format-muted": " muted",
+    "format-icons": {
+      "default": ["", "", ""]
+    },
+    "scroll-step": 2,
+    "on-click": "~/.local/bin/launch-tui wiremix"
+  },
+
+  "pulseaudio/slider": {
+    "min": 0,
+    "max": 100,
+    "orientation": "horizontal"
+  },
   
   "battery": {
     "states": { "warning": 0.20, "critical": 0.10 },
