@@ -33,6 +33,17 @@ return {
 
     telescope.setup({
       defaults = {
+        vimgrep_arguments = {
+          "rg",
+          "--color=never",
+          "--no-heading",
+          "--with-filename",
+          "--line-number",
+          "--column",
+          "--smart-case",
+          "--hidden",
+          "--no-ignore",
+        },
         mappings = {
           i = {
             ["<Tab>"]   = smart_tab,
@@ -45,6 +56,9 @@ return {
         },
       },
       pickers = {
+        find_files = {
+          no_ignore = true,
+        },
         git_status = {
           mappings = {
             i = {

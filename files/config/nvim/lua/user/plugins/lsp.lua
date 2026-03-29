@@ -94,54 +94,18 @@ return {
 
       -- clangd: single instance + compile_commands picker
 
-      local qd = require("user.plugins.utils.clangd_query_driver").compute_query_driver({
-        root_dir = vim.fn.getcwd(),
-        compile_commands_dir = "build",
-      })
-
-      local cmd = {
-        "clangd",
-        "--background-index",
-        "--compile-commands-dir=build",
-        "--header-insertion=never",
-        "--enable-config",
-      }
-
-      if qd and qd ~= "" then
-        table.insert(cmd, "--query-driver=" .. qd)
-      end
-
       vim.lsp.config("clangd", {
-        cmd = cmd,
-        filetypes = { "c", "cpp", "objc", "objcpp" },
-        root_markers = { ".git", "compile_commands.json", "compile_flags.txt" },
+        cmd = {
+          "clangd",
+          "--background-index",
+          "--compile-commands-dir=build",
+          "--header-insertion=never",
+          "--enable-config",
+          "--query-driver=**/clang++,**/g++,**/*-g++,**/*-gcc,**/*-none-elf-g++"
+        },
+        root_markers = { ".git", "CMakePresets.json" },
         single_file_support = false,
       })
-
-      vim.keymap.set("n", "<leader>sc", function()
-        local driver_str = nil
-        local ok, mod = pcall(require, "user.plugins.utils.clangd_query_driver")
-        if ok then
-          driver_str = mod.compute_query_driver({
-            root_dir = vim.fn.getcwd(),
-            compile_commands_dir = "build",
-          })
-        end
-
-        if not driver_str or driver_str == "" then
-          vim.notify("No compile_commands.json found or no compilers detected.",
-            vim.log.levels.WARN, { title = "Clangd" })
-          return
-        end
-
-        local drivers = {}
-        for item in string.gmatch(driver_str, "([^,]+)") do
-          table.insert(drivers, vim.trim(item))
-        end
-
-        local msg = table.concat(drivers, "\n")
-        vim.notify(msg, vim.log.levels.INFO, { title = "Clangd Compilers" })
-      end, { desc = "Show clangd compiler paths" })
 
       local function on_attach(_, bufnr)
         -- Format via rust-analyzer if you want (or use rustfmt via null-ls/conform)

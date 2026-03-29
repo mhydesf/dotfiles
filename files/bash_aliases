@@ -1,60 +1,19 @@
 # /bin/bash
-
-#########################
-###    CONTAINERS     ###
-#########################
-
 alias xilinx-launch="bash /home/mikhail/Documents/scripts/containers/launch.sh xilinx"
-
 alias connect="bash /home/mikhail/Documents/scripts/containers/connect.sh"
 
-#########################
-###       VENVS       ###
-#########################
-
-alias vbat-venv="source $HOME/.venv/vbat/bin/activate"
-
-#########################
-###   SHIELD SPECIAL  ###
-#########################
-
 alias pico="bash $HOME/Documents/scripts/util/pico.sh"
-
 alias picov="picocom /dev/ttyUSB1 -b 115200 --omap delbs"
+alias analyzer="xfreerdp /v:10.65.10.221 /u:analyzer1 /p:1553 /size:1400x900"
 
-alias leafctl="bash $HOME/Documents/scripts/telecho/leafctl.sh"
-
-#########################
-###       OTHER       ###
-#########################
-
-# Run full update script
 alias full-update="sudo $HOME/Documents/scripts/util/full_update.sh"
-
-# Runs a sequence of cleaning commands to refresh OS
 alias clean-sys=$HOME/.shell/clean_sys.sh
-
-# Empty Trash
 alias trash=$HOME/.shell/empty_trash.sh
 
-# Clear Baby Clear
 alias c=clear
-
-# Neovim
 alias vim=nvim
-
-# Show Img in Kitty
-alias pic="kitty +kitten icat "
-
-# XTERM SSH
-alias ssh="TERM=xterm ssh"
-
-# zoxide override
 alias cd=z
-
-# zoxide interactive override
 alias cdi=zi
-
-alias branches='(PIPENV_PIPFILE=$HOME/.shell/clean_branches/Pipfile pipenv run python $HOME/.shell/clean_branches/main.py)'
-
-alias telecho="wine $HOME/.wine_programs/TelEcho/TelEcho.exe 2>>/dev/null &"
+alias tmux="tmux new-session -A -s main"
+alias ssh="TERM=xterm ssh"
+alias pic="kitty +kitten icat "
