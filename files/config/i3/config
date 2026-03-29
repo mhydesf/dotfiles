@@ -6,7 +6,7 @@ set $terminal ~/.local/bin/kitty
 bindsym $mod+Return exec $terminal
 
 # Reload / Restart / Exit i3
-bindsym $mod+Ctrl+l exec --no-startup-id i3lock -c 000000 
+bindsym $mod+Ctrl+l exec --no-startup-id i3lock -c 000000
 bindsym $mod+Ctrl+r restart
 bindsym $mod+Ctrl+c reload
 bindsym $mod+Ctrl+e exec "i3-nagbar -t warning -m 'Exit i3?' -b 'Yes' 'i3-msg exit'"
@@ -118,7 +118,7 @@ client.unfocused        #2B2B2B #1A1A1A #888888 #2B2B2B #2B2B2B
 client.urgent           #B66A6A #1A1A1A #FFFFFF #B66A6A #B66A6A
 
 # Startup applications
-exec_always --no-startup-id xss-lock -- i3lock
+exec_always --no-startup-id xss-lock --transfer-sleep-lock -- i3lock --nofork -c 000000
 exec_always --no-startup-id nvidia-settings -a [gpu:0]/GPULogoBrightness=0 >/dev/null 2>&1
 exec_always --no-startup-id nvidia-settings -a AllowFlipping=1
 exec_always --no-startup-id nvidia-settings -a ForceFullCompositionPipeline=0
