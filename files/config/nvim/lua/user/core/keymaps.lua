@@ -26,8 +26,8 @@ vim.keymap.set('n', 'j', "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = tr
 
 -- Normal --
 -- Better window navigation
-keymap("n", "<leader>vs", ":vsplit<CR>")
-keymap("n", "<leader>hs", ":split<CR>")
+-- keymap("n", "<leader>vs", ":vsplit<CR>")
+-- keymap("n", "<leader>hs", ":split<CR>") // overriden by fullscreen preference
 keymap("n", "<C-h>", "<C-w>h")
 keymap("n", "<C-j>", "<C-w>j")
 keymap("n", "<C-k>", "<C-w>k")
@@ -35,25 +35,47 @@ keymap("n", "<C-l>", "<C-w>l")
 
 local fullscreen_state = {
   is_fullscreen = false,
-  session_data = nil,
+  session_file = "/tmp/nvim_fullscreen.vim",
 }
 
-function ToggleFullscreen()
-  if not fullscreen_state.is_fullscreen then
-    -- Save current session to a temporary file or in memory
-    fullscreen_state.session_data = vim.fn.execute('mksession! /tmp/nvim_fullscreen.vim')
-
-    -- Make current window fullscreen
-    vim.cmd("only")
-    fullscreen_state.is_fullscreen = true
-  else
-    -- Restore previous session layout
-    vim.cmd("silent! source /tmp/nvim_fullscreen.vim")
+local function restore_fullscreen_layout()
+  if fullscreen_state.is_fullscreen then
+    vim.cmd("silent! source " .. fullscreen_state.session_file)
     fullscreen_state.is_fullscreen = false
   end
 end
 
-vim.keymap.set("n", "<leader>ll", ToggleFullscreen, { silent = true, desc = "Toggle fullscreen buffer" })
+function ToggleFullscreen()
+  if not fullscreen_state.is_fullscreen then
+    vim.cmd("silent! mksession! " .. fullscreen_state.session_file)
+    vim.cmd("only")
+    fullscreen_state.is_fullscreen = true
+  else
+    restore_fullscreen_layout()
+  end
+end
+
+local function split_with_restore(cmd)
+  return function()
+    restore_fullscreen_layout()
+    vim.cmd(cmd)
+  end
+end
+
+vim.keymap.set("n", "<leader>ll", ToggleFullscreen, {
+  silent = true,
+  desc = "Toggle fullscreen buffer",
+})
+
+vim.keymap.set("n", "<leader>vs", split_with_restore("vsplit"), {
+  silent = true,
+  desc = "Vertical split, restoring fullscreen first",
+})
+
+vim.keymap.set("n", "<leader>hs", split_with_restore("split"), {
+  silent = true,
+  desc = "Horizontal split, restoring fullscreen first",
+})
 
 -- Resize with arrows
 keymap("n", "<C-Up>", ":resize -2<CR>")
