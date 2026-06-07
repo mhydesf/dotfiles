@@ -1,3 +1,7 @@
+local function executable(cmd)
+  return vim.fn.executable(cmd) == 1
+end
+
 -- Vim Options
 vim.o.termguicolors = true
 
@@ -18,18 +22,33 @@ vim.opt.incsearch = true
 vim.opt.scrolloff = 2
 vim.opt.signcolumn = 'yes'
 vim.opt.updatetime = 30
-vim.g.clipboard = {
-  name = "xclip",
-  copy = {
-    ["+"] = "xclip -selection clipboard -in -t text/plain",
-    ["*"] = "xclip -selection primary -in -t text/plain",
-  },
-  paste = {
-    ["+"] = "xclip -selection clipboard -out",
-    ["*"] = "xclip -selection primary -out",
-  },
-  cache_enabled = 0,
-}
+if executable("wl-copy") and executable("wl-paste") then
+  vim.g.clipboard = {
+    name = "wl-clipboard",
+    copy = {
+      ["+"] = { "wl-copy" },
+      ["*"] = { "wl-copy", "--primary" },
+    },
+    paste = {
+      ["+"] = { "wl-paste", "--no-newline" },
+      ["*"] = { "wl-paste", "--primary", "--no-newline" },
+    },
+    cache_enabled = true,
+  }
+elseif executable("xclip") then
+  vim.g.clipboard = {
+    name = "xclip",
+    copy = {
+      ["+"] = { "xclip", "-selection", "clipboard" },
+      ["*"] = { "xclip", "-selection", "primary" },
+    },
+    paste = {
+      ["+"] = { "xclip", "-selection", "clipboard", "-o" },
+      ["*"] = { "xclip", "-selection", "primary", "-o" },
+    },
+    cache_enabled = true,
+  }
+end
 vim.opt.clipboard = "unnamedplus"
 vim.opt.cmdheight = 2
 vim.opt.completeopt = { "menuone", "noselect" }
