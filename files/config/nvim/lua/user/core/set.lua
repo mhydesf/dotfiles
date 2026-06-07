@@ -18,6 +18,18 @@ vim.opt.incsearch = true
 vim.opt.scrolloff = 2
 vim.opt.signcolumn = 'yes'
 vim.opt.updatetime = 30
+vim.g.clipboard = {
+  name = "xclip",
+  copy = {
+    ["+"] = "xclip -selection clipboard -in -t text/plain",
+    ["*"] = "xclip -selection primary -in -t text/plain",
+  },
+  paste = {
+    ["+"] = "xclip -selection clipboard -out",
+    ["*"] = "xclip -selection primary -out",
+  },
+  cache_enabled = 0,
+}
 vim.opt.clipboard = "unnamedplus"
 vim.opt.cmdheight = 2
 vim.opt.completeopt = { "menuone", "noselect" }

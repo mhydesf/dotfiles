@@ -96,7 +96,7 @@
   background: alpha(@bg, 0.98);
   color: @fg;
   border: 1px solid alpha(@primary, 0.20);
-  border-radius: 18px;
+  border-radius: 14px;
   padding: 12px;
 }
 

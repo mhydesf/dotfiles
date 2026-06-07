@@ -1,40 +1,37 @@
-/* Unified Kitty + Hyprland Lavender */
+/* Spotlight-glass (dark, transparent, refined) */
 
-/***** GLOBAL *****/
 * {
-  font: "FiraMono Nerd Font 11";
+  font: "Inter 11";
 
-  /* surfaces */
-  bg:        #000000f2;
-  panel:     #0b0b0bfa;
-  stroke:    #2b2b2bff;
-  shadow:    #000000aa;
+  /* glass */
+  bg:        #0b0d12b8;   /* window glass */
+  panel:     #121724c2;   /* search pill */
+  stroke:    #ffffff12;   /* hairline stroke */
+  shadow:    #00000055;
 
   /* text */
-  fg:        #e9e9e9ff;
-  fg-muted:  #bcbcbc;
-  fg-dim:    #8f8f8f;
+  fg:        #f4f6fb;
+  fg-muted:  #cbd3e1;
+  fg-dim:    #a8b1c4;
 
   /* selection */
-  sel-bg:    #424242cc;
-  sel-fg:    #e9e9e9ff;
+  sel-bg:    #ffffff14;   /* subtle highlight, not white */
+  sel-fg:    #ffffff;
 
   spacing: 10;
-
-  icon-theme: "Papirus-Dark";
 }
 
 /***** WINDOW *****/
 window {
-  location: west;
-  anchor:   west;
+  location: center;
+  anchor: center;
 
-  width: 420px;
-  height: 100%;
+  width: 640px;
 
-  border: 2;
-  padding: 18px;
-  border-radius: 5px;
+  /* remove the “thick black border” */
+  border: 0;
+  padding: 14px;
+  border-radius: 18px;
 
   background-color: @bg;
 }
@@ -50,7 +47,7 @@ mainbox {
 /***** INPUT PILL *****/
 inputbar {
   border: 1px;
-  border-color: #9a90b8ff; /* Hypr active lavender */
+  border-color: @stroke;
 
   border-radius: 14px;
   padding: 10px 12px;
@@ -64,7 +61,7 @@ inputbar {
 
 prompt {
   enabled: true;
-  str: "";
+  str: ""; /* magnifier (Nerd Font) */
   text-color: @fg-dim;
 }
 
@@ -75,25 +72,20 @@ entry {
   placeholder-color: @fg-dim;
 }
 
-/***** LIST *****/
+/***** LIST (this is where the “shitty white” usually leaks in) *****/
 listview {
   border: 0;
   padding: 2px;
   spacing: 6px;
-
-  lines: 20;
-  fixed-height: false;
+  lines: 8;
+  fixed-height: true;
   scrollbar: false;
 
   background-color: transparent;
 }
 
-/* nuke all fallback surfaces */
-message,
-textbox,
-scrollbar,
-mode-switcher,
-button {
+/* belt-and-suspenders: nuke any leftover white surfaces */
+message, textbox, scrollbar, mode-switcher, button {
   background-color: transparent;
   border: 0;
 }
@@ -104,6 +96,7 @@ element {
   padding: 9px 10px;
   border-radius: 12px;
 
+  /* IMPORTANT: keep rows transparent so the window glass shows through */
   background-color: transparent;
   text-color: @fg-muted;
 }
@@ -112,8 +105,6 @@ element-icon {
   size: 1.1em;
   vertical-align: 0.5;
   margin: 0px 8px 0px 2px;
-  background-color: transparent;
-  text-color: inherit;
 }
 
 element-text {
@@ -121,7 +112,7 @@ element-text {
   text-color: inherit;
 }
 
-/* Explicitly define ALL states */
+/* Explicitly define ALL states so nothing falls back to a white default */
 element.normal.normal,
 element.normal.active,
 element.normal.urgent,
@@ -132,7 +123,7 @@ element.alternate.urgent {
   text-color: @fg-muted;
 }
 
-/* Selection */
+/* Selection: subtle translucent highlight with visible text */
 element.selected.normal,
 element.selected.active,
 element.selected.urgent {
@@ -140,13 +131,23 @@ element.selected.urgent {
   text-color: @sel-fg;
 }
 
-/* Active row slightly brighter */
+/* Optional: make active slightly brighter without changing bg */
 element.normal.active,
 element.alternate.active {
   text-color: @fg;
 }
 
-/***** ICON TRANSPARENCY FIX *****/
+/* --- ICON TRANSPARENCY FIX --- */
+
+/* Icon widget itself */
+element-icon {
+  background-color: transparent;
+  text-color: inherit;
+  size: 1.1em;
+  vertical-align: 0.5;
+}
+
+/* Force transparency across ALL element states */
 element-icon.normal,
 element-icon.active,
 element-icon.urgent,
@@ -155,10 +156,14 @@ element-icon.alternate {
   background-color: transparent;
 }
 
-/* Kill GTK fallback inheritance */
+/* Also kill background inheritance from parent elements */
 element,
 element-text,
 element-icon {
   background-color: transparent;
 }
 
+/* GTK icon fallback surfaces sometimes paint white */
+* {
+  icon-theme: "Papirus-Dark"; /* or any dark icon theme you use */
+}

@@ -143,16 +143,16 @@ export XDG_DATA_DIRS="$HOME/.local/share/flatpak/exports/share:/var/lib/flatpak/
 set -o vi
 eval "$(zoxide init bash)"
 
+export UID="$(id -u)" 2>/dev/null
+export GID="$(id -g)" 2>/dev/null
+
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
 y() {
-  local tmp="$(mktemp -t "yazi-cwd.XXXXXX")" cwd
+  local tmp
+  tmp="$(mktemp -t "yazi-cwd.XXXXXX")" || return 1
   yazi "$@" --cwd-file="$tmp"
-  if cwd="$(cat -- "$tmp")" && [ -n "$cwd" ] && [ "$cwd" != "$PWD" ]; then
-    cd -- "$cwd"
-  fi
   rm -f -- "$tmp"
 }
-

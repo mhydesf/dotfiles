@@ -1,239 +1,130 @@
-/* ===== Unified theme (Kitty + Hyprland lavender) ===== */
-
-@define-color bg        #000000;
-@define-color bg_alt    #1a1a1a;
-
+@define-color bg        rgba(0, 0, 0, 0.90);
 @define-color fg        #e9e9e9;
-@define-color fg_alt    #bdbdbd;
-
-@define-color primary   #9A90B8;   /* hyprland active_border */
-@define-color secondary #c396d7;   /* kitty purple */
-@define-color alert     #d44d53;   /* kitty red */
-@define-color disabled  #686477;   /* your existing disabled */
-
-/* Pill surfaces */
-@define-color pill_bg        alpha(@bg_alt, 0.80);
-@define-color pill_bd        alpha(@primary, 0.25);
-@define-color pill_bd_hover  alpha(@primary, 0.70);
-@define-color pill_bg_hover  alpha(@bg_alt, 0.92);
-@define-color pill_bd_focus  alpha(@primary, 0.55);
-@define-color pill_bg_focus  alpha(@primary, 0.10);
+@define-color fg_alt    #b8b8c2;
+@define-color primary   #a78bfa;
+@define-color alert     #d44d53;
+@define-color disabled  #686477;
 
 * {
   border: none;
   border-radius: 0;
-  font-family: "FiraMono Nerd Font", "FiraMono Nerd Font";
+  font-family: "FiraMono Nerd Font";
   font-size: 11px;
   font-weight: 500;
   min-height: 0;
+  box-shadow: none;
+  text-shadow: none;
 }
 
 window#waybar {
   background: @bg;
   color: @fg;
-  padding: 0 8px;
+  margin: 0;
+  padding: 0;
 }
 
-/* === Pill modules === */
 #custom-notifications,
 #workspaces,
-#window,
-#tray,
-#network,
-#audio,             /* audio group pill instead of #pulseaudio */
-#custom-memory,
-#custom-cpu,
-#battery,
 #clock,
+#custom-cpu,
+#custom-memory,
 #bluetooth,
-#custom-expand-icon {
-  margin: 4px 0px;
-  padding: 2px 10px;
-  border-radius: 999px;
-  background: @pill_bg;
-  border: 1px solid @pill_bd;
+#network,
+#pulseaudio,
+#pulseaudio-slider,
+#battery,
+#tray {
+  background: transparent;
+  color: @fg_alt;
+  margin: 0;
+  padding: 0 4px;
+}
+
+#clock {
   color: @fg;
+  font-weight: 600;
 }
 
-#custom-notifications { margin-left: 4px; }
-#custom-expand-icon { margin-right: 4px; }
-
-#custom-notifications,
-#workspaces {
-  padding: 2px 8px;
-}
-
-#audio {
-  padding-left: 10px;
-  padding-right: 2px;
-}
-
-#network {
-  padding-left: 6px;
+#custom-notifications {
+  color: @fg;
+  padding-left: 0px;
   padding-right: 10px;
 }
 
-#network > button > label,
-#network > label {
-  padding: 0;
-  margin: 0;
+#tray {
+  padding-right: 4px;
 }
 
-/* === Workspaces === */
-#workspaces button {
+#workspaces {
   padding: 0 8px;
-  margin: 0 3px;
-  border-radius: 999px;
-  color: @fg_alt;
+}
+
+#workspaces button {
   background: transparent;
+  color: @fg_alt;
+  padding: 0 10px;
+  margin: 0 1px;
+  min-width: 0;
 }
 
 #workspaces button.active {
   color: @primary;
-  background: @pill_bg_focus;
-  border: 1px solid @pill_bd_focus;
 }
 
 #workspaces button.urgent {
   color: @alert;
-  background: alpha(@alert, 0.12);
-  border: 1px solid alpha(@alert, 0.55);
 }
 
-/* Workspace accent colors = Kitty ANSI palette (coherent everywhere) */
-#workspaces button:nth-child(1),
-#workspaces button:nth-child(1).active { color: #79a6da; } /* blue */
-#workspaces button:nth-child(2),
-#workspaces button:nth-child(2).active { color: #e6c446; } /* yellow */
-#workspaces button:nth-child(3),
-#workspaces button:nth-child(3).active { color: #b9c949; } /* green */
-#workspaces button:nth-child(4),
-#workspaces button:nth-child(4).active { color: #c396d7; } /* purple */
-#workspaces button:nth-child(5),
-#workspaces button:nth-child(5).active { color: #70c0b1; } /* cyan/teal */
-#workspaces button:nth-child(6),
-#workspaces button:nth-child(6).active { color: #d44d53; } /* red */
-#workspaces button:nth-child(7),
-#workspaces button:nth-child(7).active { color: #fffefe; } /* bright white */
-#workspaces button:nth-child(8),
-#workspaces button:nth-child(8).active { color: #9A90B8; } /* lavender */
-
-#clock {
-  border: 1px solid alpha(@primary, 0.40);
-}
-
-/* === Network / audio states === */
 #network.disconnected,
-#pulseaudio.muted {
-  color: @disabled;
-  border: none;
-  background: transparent;
-}
-
-/* === Audio group: pill containing icon + slider === */
-
-/* Don’t double-style inner modules; they live inside the pill */
-#audio > * {
-  margin: 0px;
-  padding: 0px;
-  background: transparent;
-  border: none;
-}
-
-/* Reset inner module backgrounds */
-#pulseaudio,
-#pulseaudio-slider {
-  margin: 0;
-  padding: 0;
-  background: transparent;
-  border: none;
-}
-
-/* Slider "collapsed" by default */
-#pulseaudio-slider {
-  opacity: 0;
-  margin-left: 0;
-}
-
-/* On hover over the pill, reveal slider and give it some space */
-#audio:hover #pulseaudio-slider {
-  opacity: 1;
-  margin-left: 6px;
-  margin-right: 10px;
-}
-
-/* Slider visuals */
-#pulseaudio-slider trough {
-  min-width: 0;
-  min-height: 6px;
-  border-radius: 999px;
-  background-color: alpha(@bg_alt, 0.85);
-  border: 1px solid alpha(@primary, 0.18);
-}
-
-/* Wider trough only when hovered (so pill feels like it expands) */
-#audio:hover #pulseaudio-slider trough {
-  min-width: 70px;
-}
-
-#pulseaudio-slider highlight {
-  border-radius: 999px;
-  background-color: @primary;
-}
-
-#pulseaudio-slider slider {
-  min-width: 10px;
-  min-height: 10px;
-  margin: -8px;
-  border-radius: 999px;
-  background: @fg;
-  border: 1px solid alpha(@bg_alt, 0.70);
-  box-shadow: none;
-}
-
-/* === Battery states === */
-#battery.charging {
-  color: @primary;
-  border: 1px solid alpha(@primary, 0.50);
-}
-
-#battery.warning {
-  color: @secondary;
-  border: 1px solid alpha(@secondary, 0.55);
-}
-
-#battery.critical {
-  color: @alert;
-  border: 1px solid alpha(@alert, 0.60);
-}
-
-/* === Tray === */
-#tray > .passive { opacity: 0.6; }
-
-#tray > .needs-attention {
-  border: 1px solid alpha(@alert, 0.6);
-  background: alpha(@alert, 0.12);
-}
-
-/* === Bluetooth states === */
+#pulseaudio.muted,
 #bluetooth.disabled,
 #bluetooth.no-controller {
   color: @disabled;
-  border: 1px solid alpha(@disabled, 0.35);
 }
 
-/* Hover polish */
-#network:hover,
-#audio:hover,
-#custom-memory:hover,
-#custom-cpu:hover,
-#battery:hover,
-#clock:hover,
-#tray:hover,
-#custom-notifications:hover,
-#bluetooth:hover,
-#custom-expand-icon:hover {
-  border: 1px solid @pill_bd_hover;
-  background: @pill_bg_hover;
+#tray > .passive {
+  opacity: 0.55;
 }
 
+#tray > .needs-attention {
+  color: @alert;
+}
+
+#pulseaudio {
+  color: @fg;
+  padding-right: 6px;
+}
+
+#pulseaudio-slider {
+  min-width: 70px;
+  padding-left: 0;
+  padding-right: 6px;
+}
+
+#pulseaudio-slider slider {
+  min-width: 8px;
+  min-height: 8px;
+  margin: -3px 0;
+  border-radius: 999px;
+  background: @fg;
+}
+
+#pulseaudio-slider trough {
+  min-height: 4px;
+  min-width: 70px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.10);
+}
+
+#pulseaudio-slider highlight {
+  min-height: 4px;
+  border-radius: 999px;
+  background: @primary;
+}
+
+tooltip {
+  background: rgba(8, 8, 8, 0.96);
+  color: @fg;
+  border: 1px solid rgba(154, 144, 184, 0.25);
+  border-radius: 6px;
+}
