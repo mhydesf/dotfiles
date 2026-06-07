@@ -34,30 +34,53 @@ keymap("n", "<C-k>", "<C-w>k")
 keymap("n", "<C-l>", "<C-w>l")
 
 local fullscreen_state = {
-  is_fullscreen = false,
-  session_file = "/tmp/nvim_fullscreen.vim",
+  active = false,
+  origin_tab = nil,
+  fullscreen_tab = nil,
 }
 
-local function restore_fullscreen_layout()
-  if fullscreen_state.is_fullscreen then
-    vim.cmd("silent! source " .. fullscreen_state.session_file)
-    fullscreen_state.is_fullscreen = false
+local function in_valid_tab(tab)
+  return tab and vim.api.nvim_tabpage_is_valid(tab)
+end
+
+local function close_fullscreen_tab()
+  if not fullscreen_state.active then
+    return
   end
+
+  if in_valid_tab(fullscreen_state.fullscreen_tab) then
+    vim.api.nvim_set_current_tabpage(fullscreen_state.fullscreen_tab)
+    vim.cmd("tabclose")
+  end
+
+  if in_valid_tab(fullscreen_state.origin_tab) then
+    vim.api.nvim_set_current_tabpage(fullscreen_state.origin_tab)
+  end
+
+  fullscreen_state.active = false
+  fullscreen_state.origin_tab = nil
+  fullscreen_state.fullscreen_tab = nil
 end
 
 function ToggleFullscreen()
-  if not fullscreen_state.is_fullscreen then
-    vim.cmd("silent! mksession! " .. fullscreen_state.session_file)
-    vim.cmd("only")
-    fullscreen_state.is_fullscreen = true
+  if not fullscreen_state.active then
+    fullscreen_state.origin_tab = vim.api.nvim_get_current_tabpage()
+
+    -- Open current buffer in a new tab, preserving the original layout entirely.
+    vim.cmd("tab split")
+
+    fullscreen_state.fullscreen_tab = vim.api.nvim_get_current_tabpage()
+    fullscreen_state.active = true
   else
-    restore_fullscreen_layout()
+    close_fullscreen_tab()
   end
 end
 
 local function split_with_restore(cmd)
   return function()
-    restore_fullscreen_layout()
+    if fullscreen_state.active then
+      close_fullscreen_tab()
+    end
     vim.cmd(cmd)
   end
 end
@@ -69,12 +92,12 @@ vim.keymap.set("n", "<leader>ll", ToggleFullscreen, {
 
 vim.keymap.set("n", "<leader>vs", split_with_restore("vsplit"), {
   silent = true,
-  desc = "Vertical split, restoring fullscreen first",
+  desc = "Vertical split",
 })
 
 vim.keymap.set("n", "<leader>hs", split_with_restore("split"), {
   silent = true,
-  desc = "Horizontal split, restoring fullscreen first",
+  desc = "Horizontal split",
 })
 
 -- Resize with arrows

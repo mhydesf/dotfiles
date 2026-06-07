@@ -86,7 +86,7 @@ bindsym $mod+P                exec --no-startup-id playerctl play-pause
 bindsym $mod+s exec --no-startup-id ~/.shell/bt_switch.sh
 
 # App launchers
-bindsym $mod+Shift+b exec --no-startup-id google-chrome
+bindsym $mod+Shift+b exec --no-startup-id google-chrome --disable-extensions
 bindsym $mod+Shift+m exec --no-startup-id youtube-music-desktop-app
 
 # Screenshots

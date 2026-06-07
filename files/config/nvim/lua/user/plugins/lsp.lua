@@ -131,14 +131,6 @@ return {
       ---------------------------------------------------------------------------
       vim.lsp.enable(servers)
 
-      local function stop_lsp(_)
-        vim.lsp.stop_client(vim.lsp.get_clients())
-      end
-
-      vim.keymap.set("n", "slsp", function()
-        stop_lsp()
-      end, { desc = "Stop configured LSP servers" })
-
       ---------------------------------------------------------------------------
       -- Diagnostics UI
       ---------------------------------------------------------------------------

@@ -4,7 +4,7 @@ alias connect="bash /home/mikhail/Documents/scripts/containers/connect.sh"
 
 alias pico="bash $HOME/Documents/scripts/util/pico.sh"
 alias picov="picocom /dev/ttyUSB1 -b 115200 --omap delbs"
-alias analyzer="xfreerdp /v:10.65.10.221 /u:analyzer1 /p:1553 /size:1400x900"
+alias analyzer="xfreerdp /v:10.65.10.242 /u:analyzer1 /p:1553 /size:1400x900"
 
 alias full-update="sudo $HOME/Documents/scripts/util/full_update.sh"
 alias clean-sys=$HOME/.shell/clean_sys.sh
