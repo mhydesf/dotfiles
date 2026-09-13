@@ -3,20 +3,20 @@ deps = []
 
 [[flavor.deps]]
 use = "yazi-rs/flavors:catppuccin-mocha"
-rev = "9276ffa"
-hash = "8d7799e4598ff079fa5ee5c770d9bc08"
+rev = "0f9204b"
+hash = "7dfe41c9c3d9be76da8a844263d0bbed"
 
 [[flavor.deps]]
 use = "yazi-rs/flavors:catppuccin-frappe"
-rev = "9276ffa"
-hash = "90a866c034553e2d3bfdf536940733df"
+rev = "0f9204b"
+hash = "1844f850b0c5d1af511c84399c95e3d7"
 
 [[flavor.deps]]
 use = "BennyOe/tokyo-night"
-rev = "5f56364"
-hash = "c0bf69ad2c44005892d586e9693993c6"
+rev = "8e6296f"
+hash = "d9da921c3bd37ba32ee27a8a7a40461f"
 
 [[flavor.deps]]
 use = "kmlupreti/ayu-dark"
-rev = "648a178"
-hash = "1a8af82f6246942bd700316a16c4e14a"
+rev = "00804da"
+hash = "d2ce8358c59ea6e8552091075b3a191c"
