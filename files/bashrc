@@ -133,6 +133,7 @@ export LANGUAGE=en_US:en
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
 export PATH="$HOME/.local/bin:$PATH"
 export PATH="$HOME/.neovim/bin:$PATH"
+export PATH="$HOME/.local/lib/npm/bin:$PATH"
 export PATH=/opt/CMake/bin:$PATH
 export PATH=/usr/local/go/bin:$PATH
 
