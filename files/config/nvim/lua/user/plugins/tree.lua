@@ -3,13 +3,19 @@ return {
   dependencies = {
     "nvim-tree/nvim-web-devicons",
   },
-  config = function ()
+  init = function()
     vim.g.loaded_netrw = 1
     vim.g.loaded_netrwPlugin = 1
-
+  end,
+  config = function()
     require("nvim-tree").setup({
       disable_netrw = true,
       sync_root_with_cwd = true,
+      git = {
+        enable = true,
+        ignore = false,
+        timeout = 5000,
+      },
       view = {
         width = 30,
       },
@@ -104,6 +110,7 @@ return {
         vim.schedule(apply_tree_highlights)
       end,
     })
+
+    vim.keymap.set("n", "<leader>nt", "<cmd>NvimTreeToggle<CR>", { desc = "Toggle NvimTree" })
   end,
-  vim.keymap.set('n', '<leader>nt', ':NvimTreeToggle<CR>', {noremap=true})
 }

@@ -4,7 +4,6 @@ return {
     dependencies = {
       "williamboman/mason.nvim",
       "williamboman/mason-lspconfig.nvim",
-      { "j-hui/fidget.nvim", tag = "legacy" },
       "hrsh7th/cmp-nvim-lsp",
     },
     config = function()
@@ -15,13 +14,13 @@ return {
 
       local mls = require("mason-lspconfig")
       local servers = {
-        "cmake","dockerls","bashls","jsonls","yamlls","marksman","pyright","lua_ls","clangd", "rust_analyzer"
+        "neocmake","dockerls","bashls","jsonls","yamlls","marksman","pyright","lua_ls","clangd", "rust_analyzer"
       }
 
-      -- mason-lspconfig: ensure_installed ONLY; do NOT use setup_handlers here.
+      -- mason-lspconfig: ensure_installed ONLY; do NOT auto-enable before vim.lsp.config()
       mls.setup({
         ensure_installed = servers,
-        automatic_installation = true,
+        automatic_enable = false,
       })
 
       ---------------------------------------------------------------------------
@@ -38,7 +37,6 @@ return {
       vim.lsp.config("*", {
         capabilities = capabilities,
         root_markers = { ".git" },
-        autostart = false,
       })
 
       ---------------------------------------------------------------------------
@@ -75,54 +73,40 @@ return {
 
       do
         local rp = vim.split(package.path, ";")
-        table.insert(rp, "lua/?.lua"); table.insert(rp, "lua/?/init.lua")
+        table.insert(rp, "lua/?.lua")
+        table.insert(rp, "lua/?/init.lua")
         vim.lsp.config("lua_ls", {
           settings = {
             Lua = {
               runtime = { version = "LuaJIT", path = rp },
               diagnostics = { globals = { "vim" } },
-              workspace = { checkThirdParty = false, library = vim.api.nvim_get_runtime_file("", true) },
+              workspace = { checkThirdParty = false, library = { vim.env.VIMRUNTIME } },
               telemetry = { enable = false },
             },
           },
         })
       end
 
-      for _, s in ipairs({ "cmake","dockerls","bashls","jsonls","yamlls","marksman" }) do
+      for _, s in ipairs({ "neocmake", "dockerls", "bashls", "jsonls", "yamlls", "marksman" }) do
         vim.lsp.config(s, {})
       end
 
       -- clangd: single instance + compile_commands picker
-
       vim.lsp.config("clangd", {
         cmd = {
           "clangd",
           "--background-index",
           "--compile-commands-dir=build",
           "--header-insertion=never",
+          "-j=12",
           "--enable-config",
-          "--query-driver=**/clang++,**/g++,**/*-g++,**/*-gcc,**/*-none-elf-g++"
+          "--query-driver=**/clang++,**/g++,**/*-g++,**/*-gcc,**/*-none-elf-g++",
         },
         root_markers = { ".git", "CMakePresets.json" },
-        single_file_support = false,
+        workspace_required = true,
       })
 
-      local function on_attach(_, bufnr)
-        -- Format via rust-analyzer if you want (or use rustfmt via null-ls/conform)
-        -- client.server_capabilities.documentFormattingProvider = true
-
-        -- Useful rust buffer mappings
-        local map = function(mode, lhs, rhs)
-          vim.keymap.set(mode, lhs, rhs, { buffer = bufnr, silent = true })
-        end
-        map("n", "<leader>ca", vim.lsp.buf.code_action)
-        map("n", "K", vim.lsp.buf.hover)
-        map("n", "gd", vim.lsp.buf.definition)
-      end
-
       vim.lsp.config("rust_analyzer", {
-        capabilities = capabilities,
-        on_attach = on_attach,
         root_markers = { "Cargo.toml", "rust-project.json", ".git" },
       })
 

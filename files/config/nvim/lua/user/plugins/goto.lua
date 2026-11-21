@@ -10,6 +10,28 @@ return {
         if not vim.api.nvim_buf_is_valid(buf) then
           return
         end
+        local ok_dv, dv_lib = pcall(require, "diffview.lib")
+        local view = ok_dv and dv_lib.get_current_view() or nil
+        if view then
+          local target_path = vim.api.nvim_buf_get_name(buf)
+          local rel_path = view.adapter
+            and view.adapter.ctx
+            and view.adapter.ctx.toplevel
+            and vim.fs.relpath(view.adapter.ctx.toplevel, target_path)
+          if rel_path and view.files then
+            for _, file in view.files:iter() do
+              if file.path == rel_path then
+                view:set_file(file, true, true)
+                vim.schedule(function()
+                  pcall(vim.api.nvim_win_set_cursor, 0, cursor)
+                  vim.cmd("normal! zvzz")
+                end)
+                return
+              end
+            end
+          end
+          vim.cmd("tab split")
+        end
         vim.api.nvim_set_current_buf(buf)
         pcall(vim.api.nvim_win_set_cursor, 0, cursor)
       end)
@@ -40,7 +62,7 @@ return {
       focus_on_open = true,
       dismiss_on_move = false,
       force_close = true, -- passed into vim.api.nvim_win_close's second argument. See :h nvim_win_close
-      bufhidden = "wipe",
+      bufhidden = "hide",
       stack_floating_preview_windows = true,
       preview_window_title = { enable = true, position = "left" },
     })
