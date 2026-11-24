@@ -1,0 +1,34 @@
+{
+    "updateRemoteUserUID": true,
+    "capAdd": [
+        "SYS_PTRACE",
+        "NET_ADMIN",
+        "NET_RAW"
+    ],
+    "securityOpt": [
+        "seccomp=unconfined"
+    ],
+    "runArgs": [
+        "--init",
+        "--network=host"
+    ],
+    "containerEnv": {
+        "TERM": "xterm-256color",
+        "COLORTERM": "truecolor",
+        "LANG": "en_US.UTF-8",
+        "LANGUAGE": "en_US:en",
+        "LC_ALL": "en_US.UTF-8",
+        "EDITOR": "nvim",
+        "VISUAL": "nvim",
+        "DISPLAY": "${localEnv:DISPLAY}",
+        "WAYLAND_DISPLAY": "${localEnv:WAYLAND_DISPLAY}"
+    },
+    "mounts": [
+        "source=${localEnv:HOME}/.ssh,target=__HOME__/.ssh,type=bind",
+        "source=${localEnv:HOME}/.gitconfig,target=__HOME__/.gitconfig,type=bind",
+        "source=${localEnv:HOME}/.config/nvim,target=__HOME__/.config/nvim,type=bind",
+        "source=${localEnv:HOME}/.tmux.conf,target=__HOME__/.tmux.conf,type=bind",
+        "source=${localEnv:HOME}/.bash_aliases,target=__HOME__/.bash_aliases,type=bind"
+    ],
+    "postCreateCommand": "sudo mkdir -p \"$HOME/.local/share/nvim\" \"$HOME/.local/state/nvim\" \"$HOME/.cache/nvim\" \"$HOME/.vim/undodir\" \"$HOME/.tmux/plugins\" \"/run/user/$(id -u)\" && sudo chown \"$(id -u):$(id -g)\" \"$HOME\" \"/run/user/$(id -u)\" && sudo chmod 0700 \"/run/user/$(id -u)\" && ([ ! -d \"$HOME/.config\" ] || sudo chown \"$(id -u):$(id -g)\" \"$HOME/.config\") && ([ -f \"$HOME/.bashrc\" ] || cp /etc/skel/.bashrc \"$HOME/.bashrc\") && ([ -d \"$HOME/.tmux/plugins/tpm\" ] || cp -a /etc/skel/.tmux/plugins/tpm \"$HOME/.tmux/plugins/tpm\") && sudo chown -R \"$(id -u):$(id -g)\" \"$HOME/.local\" \"$HOME/.cache\" \"$HOME/.vim\" \"$HOME/.tmux\""
+}

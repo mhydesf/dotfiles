@@ -1,0 +1,109 @@
+# ~/.bashrc: executed by bash(1) for non-login shells.
+
+# If not running interactively, don't do anything
+case $- in
+    *i*) ;;
+      *) return;;
+esac
+
+# History configuration
+HISTCONTROL=ignoreboth
+shopt -s histappend
+HISTSIZE=10000
+HISTFILESIZE=20000
+
+# Update LINES and COLUMNS after each command
+shopt -s checkwinsize
+
+# Make less more friendly for non-text input files
+[ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
+
+# Enable color support of ls and grep
+if [ -x /usr/bin/dircolors ]; then
+    test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
+    alias ls='ls --color=auto'
+    alias grep='grep --color=auto'
+    alias fgrep='fgrep --color=auto'
+    alias egrep='egrep --color=auto'
+fi
+
+# Standard ls aliases
+alias ll='ls -alF'
+alias la='ls -A'
+alias l='ls -CF'
+
+# Core environment
+export EDITOR=nvim
+export VISUAL=nvim
+export LANG=en_US.UTF-8
+export LANGUAGE=en_US:en
+export LC_ALL=en_US.UTF-8
+
+export LD_LIBRARY_PATH="${LD_LIBRARY_PATH:+$LD_LIBRARY_PATH:}/usr/local/lib"
+export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
+
+# Runtime directory for Wayland clipboard (wl-copy/wl-paste)
+export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+
+# Start ssh-agent only if a forwarded agent is not already active
+if [ -z "${SSH_AUTH_SOCK:-}" ] || ! ssh-add -l >/dev/null 2>&1; then
+    eval "$(ssh-agent -s)" >/dev/null 2>&1
+    [ -f ~/.ssh/github ] && ssh-add ~/.ssh/github >/dev/null 2>&1
+    [ -f ~/.ssh/ubuntu_pi ] && ssh-add ~/.ssh/ubuntu_pi >/dev/null 2>&1
+    [ -f ~/.ssh/imx.rsa ] && ssh-add ~/.ssh/imx.rsa >/dev/null 2>&1
+fi
+
+# Auto-detect Wayland display socket if mounted in XDG_RUNTIME_DIR
+if [ -z "${WAYLAND_DISPLAY:-}" ]; then
+    for sock in "$XDG_RUNTIME_DIR"/wayland-*; do
+        if [ -S "$sock" ]; then
+            export WAYLAND_DISPLAY="$(basename "$sock")"
+            break
+        fi
+    done
+fi
+
+# Load bash completion
+if ! shopt -oq posix; then
+    if [ -f /usr/share/bash-completion/bash_completion ]; then
+        . /usr/share/bash-completion/bash_completion
+    elif [ -f /etc/bash_completion ]; then
+        . /etc/bash_completion
+    fi
+fi
+
+# Source user aliases, custom shell functions, and secrets if mounted
+if [ -f ~/.bash_aliases ]; then
+    . ~/.bash_aliases
+fi
+
+if [ -f ~/.shell/bash_func.sh ]; then
+    . ~/.shell/bash_func.sh
+fi
+
+if [ -f ~/.secrets ]; then
+    . ~/.secrets
+fi
+
+if [ -f "$HOME/.cargo/env" ]; then
+    . "$HOME/.cargo/env"
+fi
+
+# Vi mode & zoxide in shell
+set -o vi
+if command -v zoxide >/dev/null 2>&1; then
+    eval "$(zoxide init bash)"
+fi
+
+# Prompt with git branch matching host style
+BLUE='\[\033[1;36m\]'
+GREEN='\[\033[32m\]'
+YELLOW='\[\033[33m\]'
+WHITE='\[\033[00m\]'
+
+parse_git_branch() {
+    git branch 2>/dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ (\1)/'
+}
+
+PROMPT_USER="${DEVCONTAINER_NAME:-\u}"
+export PS1="${BLUE}${PROMPT_USER} ${GREEN}\W${YELLOW}\$(parse_git_branch)${WHITE} 󰑄  "

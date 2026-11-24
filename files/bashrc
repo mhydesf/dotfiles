@@ -91,10 +91,6 @@ if [ -f ~/.bash_aliases ]; then
     . ~/.bash_aliases
 fi
 
-if [ -f ~/.shell/bash_func.sh ]; then
-    . ~/.shell/bash_func.sh
-fi
-
 if [ -f ~/.secrets ]; then
     . ~/.secrets
 fi
@@ -145,3 +141,29 @@ export NVM_DIR="$HOME/.nvm"
 if [ -r "${HOME}/Documents/code/XBAT-user-scripts/env-setup.sh" ]; then
 	. "${HOME}/Documents/code/XBAT-user-scripts/env-setup.sh"
 fi
+
+# >>> aircraft-ai-setup >>>
+# Managed by aircraft-ai-setup. Re-run setup to refresh this block.
+export AIRCRAFT_AI_CODEX_CONFIG_DIR=/home/mikhail/.config/aircraft-ai-codex
+if [ -f "${AIRCRAFT_AI_CODEX_CONFIG_DIR}/shell-env.sh" ]; then
+  . "${AIRCRAFT_AI_CODEX_CONFIG_DIR}/shell-env.sh"
+  _aircraft_ai_codex_activate_default
+fi
+# <<< aircraft-ai-setup <<<
+
+# Pi Gov: keep nvm's default Node last for pi
+export NVM_DIR=/home/mikhail/.nvm
+[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+nvm use default --silent >/dev/null 2>&1 || true
+
+# Pi API key -- Bifrost GovCloud
+export BIFROST_API_KEY_GOV='sk-bf-58baac8f-a78f-452c-8cfa-806c1487f8a0'
+
+# Pi API key -- Bifrost Commercial
+export BIFROST_API_KEY_COM='sk-bf-ab706d25-72e0-42ac-9abf-30d0bb280fcf'
+
+# Pi environment -- Shield AI combined CA bundle
+export NODE_EXTRA_CA_CERTS='/etc/ssl/certs/ca-certificates.crt'
+
+# Added by the Springboard installer
+. "/home/mikhail/.local/share/springboard/installed/env"

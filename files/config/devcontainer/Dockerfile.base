@@ -1,0 +1,78 @@
+# Prebuilt toolchain stage for personal developer tools (Neovim, Zoxide, Node, uv, Python)
+# Built on Ubuntu 22.04 (glibc 2.35) so binaries remain ABI-compatible across Ubuntu 22.04, 24.04, and 26.04 bases.
+# Installed under /opt/personal so overlaying onto project images never clobbers /usr/local toolchains.
+# Build once with:
+#   docker buildx build -f ~/.config/devcontainer/Dockerfile.base -t personal-base-dev:latest ~/.config/devcontainer
+FROM ubuntu:22.04
+
+ARG DEBIAN_FRONTEND=noninteractive
+ARG NEOVIM_VERSION=v0.12.6
+ARG ZOXIDE_VERSION=v0.9.9
+ARG NODE_VERSION=24.19.0
+ARG CMAKE_VERSION=3.31.6
+
+RUN apt-get update &&                           \
+    apt-get install -y --no-install-recommends  \
+        build-essential                         \
+        ca-certificates                         \
+        curl                                    \
+        gettext                                 \
+        git                                     \
+        ninja-build                             \
+        pkg-config                              \
+        tar                                     \
+        unzip                                   \
+        xz-utils                                \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN mkdir -p /opt/personal/bin /opt/personal/node /opt/personal/uv/bin /opt/personal/python /opt/personal/python-bin
+
+# 1. Install Node.js, global npm CLI tools, uv, and Python 3.13 under /opt/personal
+RUN curl -fsSLO                                                                             \
+        "https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x64.tar.xz"   \
+    && tar -xJf                                                                             \
+        "node-v${NODE_VERSION}-linux-x64.tar.xz"                                            \
+        -C /opt/personal/node                                                               \
+        --strip-components=1                                                                \
+    && rm "node-v${NODE_VERSION}-linux-x64.tar.xz"                                          \
+    && PATH="/opt/personal/node/bin:${PATH}" npm install -g                                 \
+        tree-sitter-cli                                                                     \
+        markdown-toc                                                                        \
+        neovim                                                                              \
+    && PATH="/opt/personal/node/bin:${PATH}" npm cache clean --force                        \
+    && ln -sf /opt/personal/node/bin/tree-sitter /opt/personal/bin/tree-sitter              \
+    && ln -sf /opt/personal/node/bin/markdown-toc /opt/personal/bin/markdown-toc            \
+    && ln -sf /opt/personal/node/bin/neovim-node-host /opt/personal/bin/neovim-node-host    \
+    && curl -LsSf https://astral.sh/uv/install.sh | env UV_INSTALL_DIR=/opt/personal/uv/bin sh \
+    && UV_PYTHON_INSTALL_DIR=/opt/personal/python UV_PYTHON_BIN_DIR=/opt/personal/python-bin \
+        /opt/personal/uv/bin/uv python install 3.13
+
+# 2. Build and install Neovim from source into /opt/personal/nvim using a current CMake
+RUN curl -fsSLO                                                                                     \
+        "https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-linux-x86_64.tar.gz" \
+    && mkdir -p /tmp/cmake                                                                          \
+    && tar -xzf "cmake-${CMAKE_VERSION}-linux-x86_64.tar.gz" -C /tmp/cmake --strip-components=1     \
+    && rm "cmake-${CMAKE_VERSION}-linux-x86_64.tar.gz"                                              \
+    && git clone                                                                                    \
+        --branch "${NEOVIM_VERSION}"                                                                \
+        --depth 1                                                                                   \
+        https://github.com/neovim/neovim.git                                                        \
+        /opt/neovim                                                                                 \
+    && cd /opt/neovim                                                                               \
+    && PATH="/tmp/cmake/bin:${PATH}" cmake -S cmake.deps --preset ci                                \
+    && PATH="/tmp/cmake/bin:${PATH}" cmake --build .deps                                            \
+    && PATH="/tmp/cmake/bin:${PATH}" cmake --preset release -DCMAKE_INSTALL_PREFIX=/opt/personal/nvim \
+    && PATH="/tmp/cmake/bin:${PATH}" cmake --build build/                                           \
+    && PATH="/tmp/cmake/bin:${PATH}" cmake --install build/                                         \
+    && ln -sf /opt/personal/nvim/bin/nvim /opt/personal/bin/nvim                                    \
+    && rm -rf /opt/neovim /tmp/cmake
+
+# 3. Install Zoxide into /opt/personal/bin
+RUN git clone                                       \
+        --branch "${ZOXIDE_VERSION}"                \
+        --depth 1                                   \
+        https://github.com/ajeetdsouza/zoxide.git   \
+        /opt/zoxide                                 \
+    && cd /opt/zoxide                               \
+    && ./install.sh --bin-dir /opt/personal/bin     \
+    && rm -rf /opt/zoxide

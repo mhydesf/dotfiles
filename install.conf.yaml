@@ -15,7 +15,10 @@
     ~/.config/polybar/: files/config/polybar
     ~/.config/picom/: files/config/picom
     ~/.config/rofi/: files/config/rofi
-    ~/.shell: files/shell
+    ~/.config/devcontainer: files/config/devcontainer
+    ~/.local/bin/:
+        glob: true
+        path: files/local/bin/*
     ~/.vimrc: files/vimrc
     ~/.bashrc: files/bashrc
     ~/.bash_aliases: files/bash_aliases

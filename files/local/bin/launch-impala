@@ -1,0 +1,2 @@
+rfkill unblock wifi
+launch-tui impala

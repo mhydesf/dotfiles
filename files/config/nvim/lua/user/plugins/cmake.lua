@@ -32,6 +32,19 @@ return {
       },
     })
 
+    local utils = require("cmake-tools.utils")
+    local orig_softlink = utils.softlink
+    utils.softlink = function(src, target)
+      if src == target then
+        return
+      end
+      local stat = vim.uv.fs_lstat(target)
+      if stat and stat.type == "link" and vim.uv.fs_readlink(target) ~= src then
+        os.remove(target)
+      end
+      return orig_softlink(src, target)
+    end
+
     -- Batch quickfix line appends (every 30ms) so burst CMake/Ninja output
     -- doesn't call setqflist() + :cbottom thousands of times one line at a time.
     local qf = require("cmake-tools.quickfix")

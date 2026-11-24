@@ -1,0 +1,123 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+WORKSPACE_DIR="$(pwd)"
+PROJECT_NAME="$(basename "${WORKSPACE_DIR}" | tr '[:upper:]' '[:lower:]' | tr -cd 'a-z0-9_-')"
+LAST_CONFIG_FILE="/tmp/devcontainer-last-config-${PROJECT_NAME}"
+
+usage() {
+    cat <<EOF
+Usage: dce [-c|--config <name|path>] [command [args...]]
+
+Executes a command (default: bash) inside the running devcontainer for the current workspace.
+
+Options:
+  -c, --config <name|path>  Select a devcontainer config (path or .devcontainer/<name>/devcontainer.json)
+  -h, --help                Show this help
+EOF
+}
+
+CONFIG_ARG=""
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -c|--config)
+            if [[ $# -lt 2 ]]; then
+                echo "Error: $1 requires an argument" >&2
+                exit 2
+            fi
+            CONFIG_ARG="$2"
+            shift 2
+            ;;
+        --config=*)
+            CONFIG_ARG="${1#--config=}"
+            shift
+            ;;
+        -h|--help)
+            usage
+            exit 0
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            break
+            ;;
+    esac
+done
+
+list_sub_configs() {
+    local cfg
+    shopt -s nullglob
+    for cfg in "${WORKSPACE_DIR}"/.devcontainer/*/devcontainer.json; do
+        printf '%s\n' "${cfg}"
+    done
+    shopt -u nullglob
+}
+
+REPO_CONFIG=""
+if [[ -n "${CONFIG_ARG}" ]]; then
+    if [[ -f "${CONFIG_ARG}" ]]; then
+        REPO_CONFIG="$(realpath "${CONFIG_ARG}")"
+    elif [[ -f "${WORKSPACE_DIR}/.devcontainer/${CONFIG_ARG}/devcontainer.json" ]]; then
+        REPO_CONFIG="$(realpath "${WORKSPACE_DIR}/.devcontainer/${CONFIG_ARG}/devcontainer.json")"
+    else
+        echo "Error: devcontainer config not found: ${CONFIG_ARG}" >&2
+        exit 2
+    fi
+elif [[ -f "${LAST_CONFIG_FILE}" ]]; then
+    saved_cfg="$(cat "${LAST_CONFIG_FILE}")"
+    if [[ -f "${saved_cfg}" ]]; then
+        REPO_CONFIG="${saved_cfg}"
+    fi
+fi
+
+if [[ -z "${REPO_CONFIG}" ]]; then
+    if [[ -f "${WORKSPACE_DIR}/.devcontainer/devcontainer.json" ]]; then
+        REPO_CONFIG="$(realpath "${WORKSPACE_DIR}/.devcontainer/devcontainer.json")"
+    elif [[ -f "${WORKSPACE_DIR}/.devcontainer.json" ]]; then
+        REPO_CONFIG="$(realpath "${WORKSPACE_DIR}/.devcontainer.json")"
+    else
+        mapfile -t sub_configs < <(list_sub_configs)
+        if [[ ${#sub_configs[@]} -eq 1 ]]; then
+            REPO_CONFIG="$(realpath "${sub_configs[0]}")"
+        elif [[ ${#sub_configs[@]} -gt 1 ]]; then
+            echo "Error: multiple devcontainer configs found; specify one with -c <name> or run dcu first:" >&2
+            for cfg in "${sub_configs[@]}"; do
+                echo "  dce -c $(basename "$(dirname "${cfg}")")" >&2
+            done
+            exit 2
+        fi
+    fi
+fi
+
+CONFIG_SLUG=""
+if [[ -n "${REPO_CONFIG}" ]]; then
+    CONFIG_DIR="$(dirname "${REPO_CONFIG}")"
+    if [[ "$(basename "${CONFIG_DIR}")" != ".devcontainer" && "${CONFIG_DIR}" != "${WORKSPACE_DIR}" ]]; then
+        CONFIG_SLUG="$(basename "${CONFIG_DIR}" | tr '[:upper:]' '[:lower:]' | tr -cd 'a-z0-9_-')"
+    fi
+fi
+
+if [[ -n "${CONFIG_SLUG}" ]]; then
+    MERGED_CONFIG="/tmp/devcontainer-merged-${PROJECT_NAME}-${CONFIG_SLUG}.json"
+else
+    MERGED_CONFIG="/tmp/devcontainer-merged-${PROJECT_NAME}.json"
+fi
+
+EXTRA_ARGS=()
+if [[ -n "${REPO_CONFIG}" ]]; then
+    EXTRA_ARGS+=(--config "${REPO_CONFIG}")
+fi
+if [[ -f "${MERGED_CONFIG}" ]]; then
+    EXTRA_ARGS+=(--override-config "${MERGED_CONFIG}")
+fi
+
+if [[ $# -eq 0 ]]; then
+    set -- bash
+fi
+
+exec devcontainer exec \
+    --workspace-folder "${WORKSPACE_DIR}" \
+    "${EXTRA_ARGS[@]}" \
+    "$@"

@@ -1,0 +1,331 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+OVERLAY_DIR="$(realpath "${HOME}/.config/devcontainer")"
+OVERLAY_CONFIG="${OVERLAY_DIR}/devcontainer.json"
+OVERLAY_DOCKERFILE="${OVERLAY_DIR}/Dockerfile.overlay"
+BASE_DOCKERFILE="${OVERLAY_DIR}/Dockerfile.base"
+PERSONAL_BASE_IMAGE="personal-base-dev:latest"
+
+WORKSPACE_DIR="$(pwd)"
+PROJECT_NAME="$(basename "${WORKSPACE_DIR}" | tr '[:upper:]' '[:lower:]' | tr -cd 'a-z0-9_-')"
+LAST_CONFIG_FILE="/tmp/devcontainer-last-config-${PROJECT_NAME}"
+
+usage() {
+    cat <<EOF
+Usage: dcu [-c|--config <name|path>] [devcontainer up args...]
+
+Merges a repo's devcontainer.json (if present) with ~/.config/devcontainer/devcontainer.json
+and launches it via 'devcontainer up'.
+
+Options:
+  -c, --config <name|path>  Select a devcontainer config (path or .devcontainer/<name>/devcontainer.json)
+  -h, --help                Show this help
+EOF
+}
+
+CONFIG_ARG=""
+PASS_ARGS=()
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -c|--config)
+            if [[ $# -lt 2 ]]; then
+                echo "Error: $1 requires an argument" >&2
+                exit 2
+            fi
+            CONFIG_ARG="$2"
+            shift 2
+            ;;
+        --config=*)
+            CONFIG_ARG="${1#--config=}"
+            shift
+            ;;
+        -h|--help)
+            usage
+            exit 0
+            ;;
+        *)
+            PASS_ARGS+=("$1")
+            shift
+            ;;
+    esac
+done
+
+list_sub_configs() {
+    local cfg
+    shopt -s nullglob
+    for cfg in "${WORKSPACE_DIR}"/.devcontainer/*/devcontainer.json; do
+        printf '%s\n' "${cfg}"
+    done
+    shopt -u nullglob
+}
+
+# 1. Locate repo's devcontainer.json (if any)
+REPO_CONFIG=""
+if [[ -n "${CONFIG_ARG}" ]]; then
+    if [[ -f "${CONFIG_ARG}" ]]; then
+        REPO_CONFIG="$(realpath "${CONFIG_ARG}")"
+    elif [[ -f "${WORKSPACE_DIR}/.devcontainer/${CONFIG_ARG}/devcontainer.json" ]]; then
+        REPO_CONFIG="$(realpath "${WORKSPACE_DIR}/.devcontainer/${CONFIG_ARG}/devcontainer.json")"
+    else
+        echo "Error: devcontainer config not found: ${CONFIG_ARG}" >&2
+        mapfile -t available < <(list_sub_configs)
+        if [[ ${#available[@]} -gt 0 ]]; then
+            echo "Available configs:" >&2
+            for cfg in "${available[@]}"; do
+                echo "  - $(basename "$(dirname "${cfg}")") (${cfg})" >&2
+            done
+        fi
+        exit 2
+    fi
+elif [[ -f "${WORKSPACE_DIR}/.devcontainer/devcontainer.json" ]]; then
+    REPO_CONFIG="$(realpath "${WORKSPACE_DIR}/.devcontainer/devcontainer.json")"
+elif [[ -f "${WORKSPACE_DIR}/.devcontainer.json" ]]; then
+    REPO_CONFIG="$(realpath "${WORKSPACE_DIR}/.devcontainer.json")"
+else
+    mapfile -t sub_configs < <(list_sub_configs)
+    if [[ ${#sub_configs[@]} -eq 1 ]]; then
+        REPO_CONFIG="$(realpath "${sub_configs[0]}")"
+    elif [[ ${#sub_configs[@]} -gt 1 ]]; then
+        default_idx=1
+        if [[ -f "${LAST_CONFIG_FILE}" ]]; then
+            last_cfg="$(cat "${LAST_CONFIG_FILE}")"
+            for i in "${!sub_configs[@]}"; do
+                if [[ "$(realpath "${sub_configs[$i]}")" == "${last_cfg}" ]]; then
+                    default_idx=$((i + 1))
+                    break
+                fi
+            done
+        fi
+
+        if [[ -t 0 ]]; then
+            echo "Multiple devcontainer configs found in ${WORKSPACE_DIR}/.devcontainer:"
+            for i in "${!sub_configs[@]}"; do
+                name="$(basename "$(dirname "${sub_configs[$i]}")")"
+                marker=""
+                [[ $((i + 1)) -eq ${default_idx} ]] && marker=" [default]"
+                echo "  $((i + 1))) ${name}${marker}"
+            done
+            read -r -p "Select config [${default_idx}]: " choice
+            choice="${choice:-${default_idx}}"
+            if ! [[ "${choice}" =~ ^[0-9]+$ ]] || (( choice < 1 || choice > ${#sub_configs[@]} )); then
+                echo "Error: invalid selection '${choice}'" >&2
+                exit 2
+            fi
+            REPO_CONFIG="$(realpath "${sub_configs[$((choice - 1))]}")"
+        else
+            echo "Error: multiple devcontainer configs found; specify one with -c <name>:" >&2
+            for cfg in "${sub_configs[@]}"; do
+                echo "  dcu -c $(basename "$(dirname "${cfg}")")" >&2
+            done
+            exit 2
+        fi
+    fi
+fi
+
+# 2. Ensure personal-base-dev:latest exists (built once, cached thereafter)
+if ! docker image inspect "${PERSONAL_BASE_IMAGE}" >/dev/null 2>&1; then
+    echo "==> Building ${PERSONAL_BASE_IMAGE} (one-time build of Neovim, Zoxide, Node, uv)..."
+    docker buildx build -f "${BASE_DOCKERFILE}" -t "${PERSONAL_BASE_IMAGE}" "${OVERLAY_DIR}" --load
+fi
+
+# Strip JSONC comments/trailing commas into valid JSON for jq
+sanitize_jsonc() {
+    python3 - "$1" <<'PYEOF'
+import json, re, sys
+
+with open(sys.argv[1], "r", encoding="utf-8") as f:
+    text = f.read()
+
+# Strip // and /* */ comments while preserving string literals
+out = []
+i = 0
+n = len(text)
+in_str = False
+while i < n:
+    c = text[i]
+    if in_str:
+        out.append(c)
+        if c == "\\" and i + 1 < n:
+            out.append(text[i + 1])
+            i += 2
+            continue
+        if c == '"':
+            in_str = False
+        i += 1
+    else:
+        if c == '"':
+            in_str = True
+            out.append(c)
+            i += 1
+        elif c == "/" and i + 1 < n and text[i + 1] == "/":
+            i += 2
+            while i < n and text[i] != "\n":
+                i += 1
+        elif c == "/" and i + 1 < n and text[i + 1] == "*":
+            i += 2
+            while i + 1 < n and not (text[i] == "*" and text[i + 1] == "/"):
+                i += 1
+            i += 2
+        else:
+            out.append(c)
+            i += 1
+
+cleaned = "".join(out)
+# Remove trailing commas before } or ]
+cleaned = re.sub(r",(\s*[}\]])", r"\1", cleaned)
+obj = json.loads(cleaned)
+json.dump(obj, sys.stdout, indent=2)
+PYEOF
+}
+
+expand_local_env() {
+    python3 - "$1" <<'PYEOF'
+import os, re, sys
+
+pattern = re.compile(r"\$\{localEnv:([^:}]+)(?::([^}]*))?\}")
+def repl(m):
+    name = m.group(1)
+    default = m.group(2) if m.group(2) is not None else ""
+    val = os.environ.get(name, "")
+    return val if val else default
+
+sys.stdout.write(pattern.sub(repl, sys.argv[1]))
+PYEOF
+}
+
+# 3. Determine base image, remoteUser, and target home from repo config
+BASE_IMAGE="ubuntu:22.04"
+REMOTE_USER="base"
+CONFIG_SLUG=""
+CLEAN_REPO_JSON="$(mktemp /tmp/devcontainer-repo-XXXXXX.json)"
+trap 'rm -f "${CLEAN_REPO_JSON}"' EXIT
+
+if [[ -n "${REPO_CONFIG}" ]]; then
+    CONFIG_DIR="$(dirname "${REPO_CONFIG}")"
+    if [[ "$(basename "${CONFIG_DIR}")" != ".devcontainer" && "${CONFIG_DIR}" != "${WORKSPACE_DIR}" ]]; then
+        CONFIG_SLUG="$(basename "${CONFIG_DIR}" | tr '[:upper:]' '[:lower:]' | tr -cd 'a-z0-9_-')"
+    fi
+
+    sanitize_jsonc "${REPO_CONFIG}" > "${CLEAN_REPO_JSON}"
+
+    REMOTE_USER="$(jq -r '.remoteUser // .containerUser // "base"' "${CLEAN_REPO_JSON}")"
+    DOCKERFILE_REL="$(jq -r '.build.dockerfile // .dockerFile // empty' "${CLEAN_REPO_JSON}")"
+    CONTEXT_REL="$(jq -r '.build.context // .context // "."' "${CLEAN_REPO_JSON}")"
+    IMAGE_PROP_RAW="$(jq -r '.image // empty' "${CLEAN_REPO_JSON}")"
+
+    if [[ -n "${DOCKERFILE_REL}" ]]; then
+        DOCKERFILE_PATH="$(realpath "${CONFIG_DIR}/${DOCKERFILE_REL}")"
+        CONTEXT_PATH="$(realpath "${CONFIG_DIR}/${CONTEXT_REL}")"
+        BASE_IMAGE="${PROJECT_NAME}${CONFIG_SLUG:+-${CONFIG_SLUG}}-project-base:latest"
+        echo "==> Building project base image (${BASE_IMAGE}) from ${DOCKERFILE_REL}..."
+        docker buildx build -f "${DOCKERFILE_PATH}" -t "${BASE_IMAGE}" "${CONTEXT_PATH}" --load
+    elif [[ -n "${IMAGE_PROP_RAW}" ]]; then
+        BASE_IMAGE="$(expand_local_env "${IMAGE_PROP_RAW}")"
+    fi
+else
+    echo '{}' > "${CLEAN_REPO_JSON}"
+fi
+
+# Determine runtime $HOME inside the container (respect repo remoteEnv.HOME if set)
+REPO_HOME_RAW="$(jq -r '.remoteEnv.HOME // empty' "${CLEAN_REPO_JSON}")"
+if [[ -n "${REPO_HOME_RAW}" ]]; then
+    TARGET_HOME="$(expand_local_env "${REPO_HOME_RAW}")"
+else
+    TARGET_HOME="/home/${REMOTE_USER}"
+fi
+
+# Collect conditional host mounts (only mount paths/sockets that exist on this host)
+EXTRA_MOUNTS_JSON="[]"
+if [[ -d /tmp/.X11-unix ]]; then
+    EXTRA_MOUNTS_JSON="$(jq --arg m "source=/tmp/.X11-unix,target=/tmp/.X11-unix,type=bind" '. + [$m]' <<< "${EXTRA_MOUNTS_JSON}")"
+fi
+HOST_UID="$(id -u)"
+if [[ -n "${WAYLAND_DISPLAY:-}" && -n "${XDG_RUNTIME_DIR:-}" && -S "${XDG_RUNTIME_DIR}/${WAYLAND_DISPLAY}" ]]; then
+    EXTRA_MOUNTS_JSON="$(jq --arg m "source=${XDG_RUNTIME_DIR}/${WAYLAND_DISPLAY},target=/run/user/${HOST_UID}/${WAYLAND_DISPLAY},type=bind" '. + [$m]' <<< "${EXTRA_MOUNTS_JSON}")"
+fi
+
+# Build list of existing host dotfile sources so missing files don't break docker bind mounts
+EXISTING_OVERLAY_MOUNTS_JSON="[]"
+while IFS= read -r mount_spec; do
+    [[ -z "${mount_spec}" ]] && continue
+    src_raw="$(sed -n 's/.*source=\([^,]*\).*/\1/p' <<< "${mount_spec}")"
+    src_expanded="$(expand_local_env "${src_raw}")"
+    if [[ -e "${src_expanded}" ]]; then
+        mount_resolved="${mount_spec//__HOME__/${TARGET_HOME}}"
+        mount_resolved="${mount_resolved//__USERNAME__/${REMOTE_USER}}"
+        EXISTING_OVERLAY_MOUNTS_JSON="$(jq --arg m "${mount_resolved}" '. + [$m]' <<< "${EXISTING_OVERLAY_MOUNTS_JSON}")"
+    fi
+done < <(jq -r '.mounts[]? // empty' "${OVERLAY_CONFIG}")
+
+# 4. Merge repo devcontainer.json + ~/.config/devcontainer/devcontainer.json
+if [[ -n "${CONFIG_SLUG}" ]]; then
+    MERGED_CONFIG="/tmp/devcontainer-merged-${PROJECT_NAME}-${CONFIG_SLUG}.json"
+else
+    MERGED_CONFIG="/tmp/devcontainer-merged-${PROJECT_NAME}.json"
+fi
+
+jq -s \
+    --arg base_image "${BASE_IMAGE}" \
+    --arg username "${REMOTE_USER}" \
+    --arg target_home "${TARGET_HOME}" \
+    --arg overlay_dir "${OVERLAY_DIR}" \
+    --arg overlay_df "${OVERLAY_DOCKERFILE}" \
+    --arg project_name "${PROJECT_NAME}" \
+    --arg host_xdg "/run/user/${HOST_UID}" \
+    --argjson overlay_mounts "${EXISTING_OVERLAY_MOUNTS_JSON}" \
+    --argjson extra_mounts "${EXTRA_MOUNTS_JSON}" \
+    '
+    (.[0]) as $repo |
+    (.[1] | walk(
+        if type == "string" then
+            gsub("__HOME__"; $target_home) | gsub("__USERNAME__"; $username)
+        else . end
+    )) as $overlay |
+    ($repo * $overlay) |
+    del(.image, .dockerFile, .context, .features, .customizations, .onCreateCommand, .updateContentCommand, .postStartCommand, .postAttachCommand) |
+    .name = ($repo.name // $project_name) |
+    .remoteUser = $username |
+    (if ($repo | has("containerUser")) then .containerUser = $repo.containerUser else del(.containerUser) end) |
+    (if ($repo | has("workspaceMount")) then .workspaceMount = $repo.workspaceMount else del(.workspaceMount) end) |
+    (if ($repo | has("workspaceFolder")) then .workspaceFolder = $repo.workspaceFolder else del(.workspaceFolder) end) |
+    .build = {
+        "dockerfile": $overlay_df,
+        "context": $overlay_dir,
+        "args": (($repo.build.args // {}) + {
+            "BASE_IMAGE": $base_image,
+            "USERNAME": $username
+        })
+    } |
+    .capAdd = ((($repo.capAdd // []) + ($overlay.capAdd // [])) | unique) |
+    .securityOpt = ((($repo.securityOpt // []) + ($overlay.securityOpt // [])) | unique) |
+    .runArgs = ((($repo.runArgs // []) + ($overlay.runArgs // [])) | unique) |
+    .mounts = ((($repo.mounts // []) + $overlay_mounts + $extra_mounts) | unique) |
+    .containerEnv = (
+        (($repo.containerEnv // {}) + ($overlay.containerEnv // {}) + {
+            "DEVCONTAINER_NAME": (($repo.name // $project_name) | ascii_downcase | gsub("[^a-z0-9_-]+"; "-") | gsub("^-+|-+$"; ""))
+        })
+        | if (($repo.remoteEnv // {}) | has("XDG_RUNTIME_DIR")) or (($repo.containerEnv // {}) | has("XDG_RUNTIME_DIR"))
+          then del(.XDG_RUNTIME_DIR)
+          else . + {"XDG_RUNTIME_DIR": $host_xdg}
+          end
+    ) |
+    .postCreateCommand = $overlay.postCreateCommand
+    ' "${CLEAN_REPO_JSON}" "${OVERLAY_CONFIG}" > "${MERGED_CONFIG}"
+
+rm -f "${CLEAN_REPO_JSON}"
+trap - EXIT
+
+UP_CMD=(devcontainer up --workspace-folder "${WORKSPACE_DIR}")
+if [[ -n "${REPO_CONFIG}" ]]; then
+    printf '%s\n' "${REPO_CONFIG}" > "${LAST_CONFIG_FILE}"
+    UP_CMD+=(--config "${REPO_CONFIG}")
+else
+    rm -f "${LAST_CONFIG_FILE}"
+fi
+UP_CMD+=(--override-config "${MERGED_CONFIG}" "${PASS_ARGS[@]}")
+
+echo "==> Base image: ${BASE_IMAGE}"
+echo "==> Target home: ${TARGET_HOME} (remoteUser: ${REMOTE_USER})"
+echo "==> Launching devcontainer with personal overlay (${MERGED_CONFIG})..."
+exec "${UP_CMD[@]}"
