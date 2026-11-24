@@ -1,7 +1,3 @@
-local function executable(cmd)
-  return vim.fn.executable(cmd) == 1
-end
-
 -- Vim Options
 vim.o.termguicolors = true
 
@@ -22,38 +18,11 @@ vim.opt.incsearch = true
 vim.opt.scrolloff = 2
 vim.opt.signcolumn = 'yes'
 vim.opt.updatetime = 30
-if executable("wl-copy") and executable("wl-paste") then
-  vim.g.clipboard = {
-    name = "wl-clipboard",
-    copy = {
-      ["+"] = { "wl-copy" },
-      ["*"] = { "wl-copy", "--primary" },
-    },
-    paste = {
-      ["+"] = { "wl-paste", "--no-newline" },
-      ["*"] = { "wl-paste", "--primary", "--no-newline" },
-    },
-    cache_enabled = true,
-  }
-elseif executable("xclip") then
-  vim.g.clipboard = {
-    name = "xclip",
-    copy = {
-      ["+"] = { "xclip", "-selection", "clipboard" },
-      ["*"] = { "xclip", "-selection", "primary" },
-    },
-    paste = {
-      ["+"] = { "xclip", "-selection", "clipboard", "-o" },
-      ["*"] = { "xclip", "-selection", "primary", "-o" },
-    },
-    cache_enabled = true,
-  }
-end
+vim.g.clipboard = nil
 vim.opt.clipboard = "unnamedplus"
 vim.opt.cmdheight = 2
-vim.opt.completeopt = { "menuone", "noselect" }
+vim.opt.completeopt = { "menu", "menuone", "noselect" }
 vim.opt.conceallevel = 0
-vim.opt.fileencoding = "utf-8"
 vim.opt.ignorecase = true
 vim.opt.pumheight = 10
 vim.opt.smartcase = true
@@ -68,8 +37,6 @@ vim.opt.linebreak = true
 vim.opt.sidescrolloff = 8
 vim.opt.whichwrap = "bs<>[]hl"
 
-vim.o.completeopt = 'menuone,noselect'
-
 -- [[ Highlight on yank ]]
 -- See `:help vim.highlight.on_yank()`
 local highlight_group = vim.api.nvim_create_augroup('YankHighlight', { clear = true })
@@ -81,15 +48,33 @@ vim.api.nvim_create_autocmd('TextYankPost', {
   pattern = '*',
 })
 
--- Set Tab Spacing to 2 for Lua files
-vim.cmd[[ autocmd FileType lua set tabstop=2 shiftwidth=2 ]]
--- Set Tab Spacing to 4 for YAML files
-vim.cmd[[ autocmd FileType yaml set tabstop=4 shiftwidth=4 ]]
--- Enable Text Wrapping for Markdown files
-vim.cmd[[
-  augroup MarkdownWrap
-    autocmd!
-    autocmd FileType markdown setlocal wrap
-    autocmd FileType markdown setlocal textwidth=0
-  augroup END
-]]
+local ft_group = vim.api.nvim_create_augroup('FileTypeSettings', { clear = true })
+
+vim.api.nvim_create_autocmd('FileType', {
+  group = ft_group,
+  pattern = 'lua',
+  callback = function()
+    vim.opt_local.tabstop = 2
+    vim.opt_local.softtabstop = 2
+    vim.opt_local.shiftwidth = 2
+  end,
+})
+
+vim.api.nvim_create_autocmd('FileType', {
+  group = ft_group,
+  pattern = 'yaml',
+  callback = function()
+    vim.opt_local.tabstop = 4
+    vim.opt_local.softtabstop = 4
+    vim.opt_local.shiftwidth = 4
+  end,
+})
+
+vim.api.nvim_create_autocmd('FileType', {
+  group = ft_group,
+  pattern = 'markdown',
+  callback = function()
+    vim.opt_local.wrap = true
+    vim.opt_local.textwidth = 0
+  end,
+})

@@ -16,6 +16,10 @@
     ~/.config/swaync: files/config/swaync
     ~/.config/Thunar: files/config/Thunar
     ~/.config/yazi: files/config/yazi
+    ~/.config/devcontainer: files/config/devcontainer
+    ~/.local/bin/:
+        glob: true
+        path: files/local/bin/*
     ~/.shell: files/shell
     ~/.vimrc: files/vimrc
     ~/.bashrc: files/bashrc

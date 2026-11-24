@@ -1,16 +1,14 @@
 return {
-  'lukas-reineke/indent-blankline.nvim',
-  config = function()
-    require('ibl').setup ()
-    require('ibl').overwrite {
-      indent = {
-        char = "┆",
+  "lukas-reineke/indent-blankline.nvim",
+  main = "ibl",
+  opts = {
+    indent = {
+      char = "┆",
+    },
+    exclude = {
+      filetypes = {
+        "dashboard",
       },
-      exclude = {
-        filetypes = {
-          'dashboard',
-        }
-      }
-    }
-  end
+    },
+  },
 }

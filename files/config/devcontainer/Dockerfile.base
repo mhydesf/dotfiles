@@ -1,0 +1,65 @@
+# Prebuilt toolchain stage for personal developer tools (Neovim, Zoxide, Node, uv, Python)
+# Build once with:
+#   docker buildx build -f ~/.config/devcontainer/Dockerfile.base -t base-dev:latest ~/.config/devcontainer
+FROM ubuntu:26.04
+
+ARG DEBIAN_FRONTEND=noninteractive
+ARG NEOVIM_VERSION=v0.12.6
+ARG ZOXIDE_VERSION=v0.9.9
+ARG NODE_VERSION=24.19.0
+
+RUN apt-get update &&                           \
+    apt-get install -y --no-install-recommends  \
+        build-essential                         \
+        ca-certificates                         \
+        cmake                                   \
+        curl                                    \
+        gettext                                 \
+        git                                     \
+        ninja-build                             \
+        pkg-config                              \
+        tar                                     \
+        unzip                                   \
+        xz-utils                                \
+    && rm -rf /var/lib/apt/lists/*
+
+# 1. Install Node.js, uv, Python 3.13 & global npm CLI tools into /usr/local and /opt/python
+RUN curl -fsSLO                                                                             \
+        "https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x64.tar.xz"   \
+    && tar -xJf                                                                             \
+        "node-v${NODE_VERSION}-linux-x64.tar.xz"                                            \
+        -C /usr/local                                                                       \
+        --strip-components=1                                                                \
+    && rm "node-v${NODE_VERSION}-linux-x64.tar.xz"                                          \
+    && npm install -g                                                                       \
+        tree-sitter-cli                                                                     \
+        markdown-toc                                                                        \
+        neovim                                                                              \
+    && npm cache clean --force                                                              \
+    && curl -LsSf https://astral.sh/uv/install.sh | env UV_INSTALL_DIR=/usr/local/bin sh    \
+    && UV_PYTHON_INSTALL_DIR=/opt/python UV_PYTHON_BIN_DIR=/usr/local/bin                   \
+        uv python install 3.13
+
+# 2. Build and install Neovim from source into /usr/local
+RUN git clone                                                           \
+        --branch "${NEOVIM_VERSION}"                                    \
+        --depth 1                                                       \
+        https://github.com/neovim/neovim.git                            \
+        /opt/neovim                                                     \
+    && cd /opt/neovim                                                   \
+    && cmake -S cmake.deps --preset ci                                  \
+    && cmake --build .deps                                              \
+    && cmake --preset release                                           \
+    && cmake --build build/                                             \
+    && cmake --install build/                                           \
+    && rm -rf /opt/neovim
+
+# 3. Build and install Zoxide into /usr/local/bin
+RUN git clone                                       \
+        --branch "${ZOXIDE_VERSION}"                \
+        --depth 1                                   \
+        https://github.com/ajeetdsouza/zoxide.git   \
+        /opt/zoxide                                 \
+    && cd /opt/zoxide                               \
+    && ./install.sh --bin-dir /usr/local/bin        \
+    && rm -rf /opt/zoxide

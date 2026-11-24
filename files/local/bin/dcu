@@ -1,0 +1,90 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+OVERLAY_DIR="$(realpath "${HOME}/.config/devcontainer")"
+OVERLAY_CONFIG="${OVERLAY_DIR}/devcontainer.json"
+OVERLAY_DOCKERFILE="${OVERLAY_DIR}/Dockerfile.overlay"
+BASE_DOCKERFILE="${OVERLAY_DIR}/Dockerfile.base"
+
+WORKSPACE_DIR="$(pwd)"
+PROJECT_NAME="$(basename "${WORKSPACE_DIR}" | tr '[:upper:]' '[:lower:]' | tr -cd 'a-z0-9_-')"
+
+# 1. Ensure base-dev:latest exists (built once, cached thereafter)
+if ! docker image inspect base-dev:latest >/dev/null 2>&1; then
+    echo "==> Building base-dev:latest (one-time build of Neovim, Zoxide, Node, uv)..."
+    docker buildx build -f "${BASE_DOCKERFILE}" -t base-dev:latest "${OVERLAY_DIR}" --load
+fi
+
+# 2. Locate repo's devcontainer.json (if any)
+REPO_CONFIG=""
+if [[ -f "${WORKSPACE_DIR}/.devcontainer/devcontainer.json" ]]; then
+    REPO_CONFIG="${WORKSPACE_DIR}/.devcontainer/devcontainer.json"
+elif [[ -f "${WORKSPACE_DIR}/.devcontainer.json" ]]; then
+    REPO_CONFIG="${WORKSPACE_DIR}/.devcontainer.json"
+fi
+
+# 3. Determine base image and remoteUser from repo config
+BASE_IMAGE="ubuntu:26.04"
+REMOTE_USER="base"
+
+if [[ -n "${REPO_CONFIG}" ]]; then
+    CONFIG_DIR="$(dirname "${REPO_CONFIG}")"
+    REMOTE_USER="$(jq -r '.remoteUser // .containerUser // "base"' "${REPO_CONFIG}")"
+
+    DOCKERFILE_REL="$(jq -r '.build.dockerfile // .dockerFile // empty' "${REPO_CONFIG}")"
+    CONTEXT_REL="$(jq -r '.build.context // .context // "."' "${REPO_CONFIG}")"
+    IMAGE_PROP="$(jq -r '.image // empty' "${REPO_CONFIG}")"
+
+    if [[ -n "${DOCKERFILE_REL}" ]]; then
+        DOCKERFILE_PATH="$(realpath "${CONFIG_DIR}/${DOCKERFILE_REL}")"
+        CONTEXT_PATH="$(realpath "${CONFIG_DIR}/${CONTEXT_REL}")"
+        BASE_IMAGE="${PROJECT_NAME}-project-base:latest"
+        echo "==> Building project base image (${BASE_IMAGE}) from ${DOCKERFILE_REL}..."
+        docker buildx build -f "${DOCKERFILE_PATH}" -t "${BASE_IMAGE}" "${CONTEXT_PATH}" --load
+    elif [[ -n "${IMAGE_PROP}" ]]; then
+        BASE_IMAGE="${IMAGE_PROP}"
+    fi
+else
+    REPO_CONFIG="$(mktemp /tmp/devcontainer-empty-XXXXXX.json)"
+    echo '{}' > "${REPO_CONFIG}"
+fi
+
+# 4. Merge repo devcontainer.json + ~/.config/devcontainer/devcontainer.json
+MERGED_CONFIG="/tmp/devcontainer-merged-${PROJECT_NAME}.json"
+
+jq -s \
+    --arg base_image "${BASE_IMAGE}" \
+    --arg username "${REMOTE_USER}" \
+    --arg overlay_dir "${OVERLAY_DIR}" \
+    --arg overlay_df "${OVERLAY_DOCKERFILE}" \
+    --arg project_name "${PROJECT_NAME}" \
+    '
+    (.[0]) as $repo |
+    (.[1] | walk(if type == "string" then gsub("__USERNAME__"; $username) else . end)) as $overlay |
+    ($repo * $overlay) |
+    del(.image, .dockerFile, .context) |
+    .name = ($repo.name // $project_name) |
+    .remoteUser = $username |
+    .containerUser = $username |
+    .workspaceMount = ($repo.workspaceMount // "source=${localWorkspaceFolder},target=/workspace/${localWorkspaceFolderBasename},type=bind,consistency=cached") |
+    .workspaceFolder = ($repo.workspaceFolder // "/workspace/${localWorkspaceFolderBasename}") |
+    .build = {
+        "dockerfile": $overlay_df,
+        "context": $overlay_dir,
+        "args": (($repo.build.args // {}) + {
+            "BASE_IMAGE": $base_image,
+            "USERNAME": $username
+        })
+    } |
+    .capAdd = ((($repo.capAdd // []) + ($overlay.capAdd // [])) | unique) |
+    .securityOpt = ((($repo.securityOpt // []) + ($overlay.securityOpt // [])) | unique) |
+    .runArgs = ((($repo.runArgs // []) + ($overlay.runArgs // [])) | unique) |
+    .mounts = ((($repo.mounts // []) + ($overlay.mounts // [])) | unique) |
+    .containerEnv = (($repo.containerEnv // {}) + ($overlay.containerEnv // {}))
+    ' "${REPO_CONFIG}" "${OVERLAY_CONFIG}" > "${MERGED_CONFIG}"
+
+echo "==> Launching devcontainer with personal overlay (${MERGED_CONFIG})..."
+exec devcontainer up \
+    --workspace-folder "${WORKSPACE_DIR}" \
+    --override-config "${MERGED_CONFIG}" \
+    "$@"

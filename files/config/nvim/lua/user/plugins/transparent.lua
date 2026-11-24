@@ -1,9 +1,9 @@
 return {
-  'xiyaowong/nvim-transparent',
+  "xiyaowong/nvim-transparent",
   config = function()
-    require("transparent").setup()
-    require("transparent").clear_prefix("NvimTree")
-    require("transparent").clear_prefix("BufferLine")
-    vim.api.nvim_set_keymap("n", "TT", ":TransparentToggle<CR>", {noremap=true})
-  end
+    local transparent = require("transparent")
+    transparent.setup()
+    transparent.clear_prefix("NvimTree")
+    vim.keymap.set("n", "<leader>tt", "<cmd>TransparentToggle<CR>", { desc = "Toggle transparency" })
+  end,
 }

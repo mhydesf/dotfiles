@@ -3,13 +3,41 @@ return {
   dependencies = {
     "nvim-tree/nvim-web-devicons",
   },
-  config = function ()
+  init = function()
     vim.g.loaded_netrw = 1
     vim.g.loaded_netrwPlugin = 1
-
+  end,
+  config = function()
     require("nvim-tree").setup({
       disable_netrw = true,
       sync_root_with_cwd = true,
+      git = {
+        enable = true,
+        timeout = 2000,
+        disable_for_dirs = function(path)
+          return path:match("/third_party") ~= nil
+            or path:match("/cpm_cache") ~= nil
+            or path:match("/build") ~= nil
+            or path:match("/_deps") ~= nil
+        end,
+      },
+      filesystem_watchers = {
+        enable = true,
+        debounce_delay = 50,
+        ignore_dirs = {
+          "/.ccls-cache",
+          "/.cache",
+          "/.git",
+          "/.venv",
+          "/build",
+          "/cpm_cache",
+          "/_deps",
+          "/node_modules",
+          "/target",
+          "/third_party",
+          "/.zig-cache",
+        },
+      },
       view = {
         width = 30,
       },
@@ -104,6 +132,15 @@ return {
         vim.schedule(apply_tree_highlights)
       end,
     })
+
+    local git_runner = require("nvim-tree.git.runner")
+    local orig_get_spawn_options = git_runner.get_spawn_options
+    git_runner.get_spawn_options = function(self, stdout_handle, stderr_handle)
+      local opts = orig_get_spawn_options(self, stdout_handle, stderr_handle)
+      table.insert(opts.args, 4, "--ignore-submodules=all")
+      return opts
+    end
+
+    vim.keymap.set("n", "<leader>nt", "<cmd>NvimTreeToggle<CR>", { desc = "Toggle NvimTree" })
   end,
-  vim.keymap.set('n', '<leader>nt', ':NvimTreeToggle<CR>', {noremap=true})
 }

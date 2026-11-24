@@ -1,11 +1,11 @@
 return {
-  'tpope/vim-fugitive',
+  "tpope/vim-fugitive",
   config = function()
-    vim.api.nvim_set_keymap("n", "<leader>gcb", ":Git checkout ", {noremap=false})
-    vim.api.nvim_set_keymap("n", "<leader>gnb", ":Git checkout -b ", {noremap=false})
-    vim.api.nvim_set_keymap("n", "<leader>gc", ":Git commit -m \"", {noremap=false})
-    vim.api.nvim_set_keymap("n", "<leader>gp", ":Git push -u origin HEAD<CR>", {noremap=false})
-    vim.api.nvim_set_keymap("n", "<leader>gb", ":Git blame<CR>", {noremap=false})
-    vim.api.nvim_set_keymap("n", "<leader>gs", ":Git<CR>", {noremap=false})
-  end
+    vim.keymap.set("n", "<leader>gcb", ":Git checkout ")
+    vim.keymap.set("n", "<leader>gnb", ":Git checkout -b ")
+    vim.keymap.set("n", "<leader>gc", ':Git commit -m "')
+    vim.keymap.set("n", "<leader>gp", "<cmd>Git push -u origin HEAD<CR>")
+    vim.keymap.set("n", "<leader>gb", "<cmd>Git blame<CR>")
+    vim.keymap.set("n", "<leader>gs", "<cmd>Git<CR>")
+  end,
 }

@@ -16,23 +16,7 @@ vim.keymap.set({ 'n', 'v' }, '<Space>', '<Nop>', { silent = true })
 vim.keymap.set('n', 'k', "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true })
 vim.keymap.set('n', 'j', "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true })
 
--- Modes
---   normal_mode = "n",
---   insert_mode = "i",
---   visual_mode = "v",
---   visual_block_mode = "x",
---   term_mode = "t",
---   command_mode = "c",
-
 -- Normal --
--- Better window navigation
--- keymap("n", "<leader>vs", ":vsplit<CR>")
--- keymap("n", "<leader>hs", ":split<CR>") // overriden by fullscreen preference
-keymap("n", "<C-h>", "<C-w>h")
-keymap("n", "<C-j>", "<C-w>j")
-keymap("n", "<C-k>", "<C-w>k")
-keymap("n", "<C-l>", "<C-w>l")
-
 local fullscreen_state = {
   active = false,
   origin_tab = nil,
@@ -128,22 +112,18 @@ keymap("x", "J", ":m '>+1<CR>gv=gv")
 keymap("x", "K", ":m '<-2<CR>gv=gv")
 
 -- files
-vim.api.nvim_set_keymap("n", "QQ", ":q!<enter>", {noremap=false})
-vim.api.nvim_set_keymap("n", "WW", ":w!<enter>", {noremap=false})
-vim.api.nvim_set_keymap("n", "E", "$", {noremap=false})
-vim.api.nvim_set_keymap("n", "B", "^", {noremap=false})
-vim.api.nvim_set_keymap("n", "ss", ":noh<CR>", {noremap=true})
-vim.api.nvim_set_keymap("n", "<leader>nf", ":enew<CR>", {noremap=true})
+keymap("n", "QQ", "<cmd>q!<CR>")
+keymap("n", "WW", "<cmd>w!<CR>")
+keymap({ "n", "x", "o" }, "E", "$")
+keymap({ "n", "x", "o" }, "B", "^")
+keymap("n", "ss", "<cmd>noh<CR>")
+keymap("n", "<leader>nf", "<cmd>enew<CR>")
+keymap("n", "<leader>pp", "<cmd>echo expand('%:p')<CR>")
 
-vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float)
-vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist)
+keymap("n", "<leader>e", vim.diagnostic.open_float)
+keymap("n", "<leader>q", vim.diagnostic.setloclist)
 
--- Remap for dealing with word wrap
-vim.keymap.set('n', 'k', "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true })
-vim.keymap.set('n', 'j', "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true })
-
-
-vim.keymap.set("n", "<leader>cmc", function()
+keymap("n", "<leader>cmc", function()
   local cache_dir = vim.fn.expand("~/.cache/nvim")
   vim.fn.delete(cache_dir, "rf")
-end, { noremap = true, silent = true, desc = "Clear Neovim cache (~/.cache/nvim)" })
+end, { silent = true, desc = "Clear Neovim cache (~/.cache/nvim)" })

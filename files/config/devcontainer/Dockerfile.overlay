@@ -1,0 +1,113 @@
+ARG BASE_IMAGE=ubuntu:26.04
+FROM ${BASE_IMAGE}
+
+ARG DEBIAN_FRONTEND=noninteractive
+ARG USERNAME=base
+ARG USER_UID=1000
+ARG USER_GID=1000
+
+USER root
+
+# 1. Copy prebuilt Neovim, Zoxide, Node, tree-sitter, uv & Python from base-dev:latest
+COPY --from=base-dev:latest /usr/local/ /usr/local/
+COPY --from=base-dev:latest /opt/python/ /opt/python/
+
+# 2. Install personal interactive CLI, Tmux, search, clipboard & LSP packages
+RUN apt-get update &&                           \
+    apt-get install -y --no-install-recommends  \
+        bash-completion                         \
+        btop                                    \
+        ca-certificates                         \
+        clang                                   \
+        clang-format                            \
+        clang-tidy                              \
+        clangd                                  \
+        curl                                    \
+        fd-find                                 \
+        file                                    \
+        fzf                                     \
+        gdb                                     \
+        git                                     \
+        htop                                    \
+        iproute2                                \
+        iputils-ping                            \
+        jq                                      \
+        keychain                                \
+        less                                    \
+        liblua5.1-0-dev                         \
+        lld                                     \
+        lldb                                    \
+        locales                                 \
+        ltrace                                  \
+        lua5.1                                  \
+        luajit                                  \
+        luarocks                                \
+        netcat-openbsd                          \
+        openssh-client                          \
+        procps                                  \
+        python3                                 \
+        python3-dev                             \
+        python3-pip                             \
+        python3-venv                            \
+        ripgrep                                 \
+        strace                                  \
+        sudo                                    \
+        tcpdump                                 \
+        tmux                                    \
+        tree                                    \
+        unzip                                   \
+        wl-clipboard                            \
+        xclip                                   \
+        xsel                                    \
+        xz-utils                                \
+        zip                                     \
+    && locale-gen en_US.UTF-8                   \
+    && update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 \
+    && ln -sf /usr/bin/fdfind /usr/local/bin/fd \
+    && rm -rf /var/lib/apt/lists/*
+
+# 3. Ensure target user exists with UID/GID and passwordless sudo
+RUN if ! id -u "${USERNAME}" >/dev/null 2>&1; then                          \
+        existing_user="$(getent passwd "${USER_UID}" | cut -d: -f1 || true)"; \
+        if [ -n "${existing_user}" ]; then                                  \
+            groupmod -n "${USERNAME}" "${existing_user}" 2>/dev/null || true; \
+            usermod -l "${USERNAME}" -d "/home/${USERNAME}" -m "${existing_user}"; \
+        else                                                                \
+            groupadd --gid "${USER_GID}" "${USERNAME}" 2>/dev/null || true; \
+            useradd --uid "${USER_UID}" --gid "${USER_GID}" --create-home --shell /bin/bash "${USERNAME}"; \
+        fi;                                                                 \
+    fi                                                                      \
+    && echo "${USERNAME} ALL=(ALL) NOPASSWD:ALL" > "/etc/sudoers.d/${USERNAME}" \
+    && chmod 0440 "/etc/sudoers.d/${USERNAME}"
+
+# 4. Prepare Neovim, Tmux (TPM), XDG runtime directories & personal .bashrc
+RUN mkdir -p                                                            \
+        /workspace                                                      \
+        /run/user/${USER_UID}                                           \
+        /home/${USERNAME}/.config/nvim                                  \
+        /home/${USERNAME}/.local/bin                                    \
+        /home/${USERNAME}/.local/share/nvim                             \
+        /home/${USERNAME}/.local/state/nvim                             \
+        /home/${USERNAME}/.cache/nvim                                   \
+        /home/${USERNAME}/.vim/undodir                                  \
+        /home/${USERNAME}/.tmux/plugins                                 \
+        /home/${USERNAME}/.ssh                                          \
+    && if [ ! -d "/home/${USERNAME}/.tmux/plugins/tpm" ]; then          \
+        git clone --depth 1                                             \
+            https://github.com/tmux-plugins/tpm.git                     \
+            /home/${USERNAME}/.tmux/plugins/tpm;                        \
+    fi                                                                  \
+    && if [ ! -f "/home/${USERNAME}/.profile" ] && [ -f /etc/skel/.profile ]; then \
+        cp /etc/skel/.profile "/home/${USERNAME}/.profile";             \
+    fi                                                                  \
+    && chmod 0700 /run/user/${USER_UID} /home/${USERNAME}/.ssh          \
+    && chown -R ${USER_UID}:${USER_GID}                                 \
+        /workspace                                                      \
+        /run/user/${USER_UID}                                           \
+        /home/${USERNAME}
+
+COPY --chown=${USER_UID}:${USER_GID}    \
+    resources/bashrc                    \
+    /home/${USERNAME}/.bashrc
+
+USER ${USERNAME}

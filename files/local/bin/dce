@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+PROJECT_NAME="$(basename "$(pwd)" | tr '[:upper:]' '[:lower:]' | tr -cd 'a-z0-9_-')"
+MERGED_CONFIG="/tmp/devcontainer-merged-${PROJECT_NAME}.json"
+
+EXTRA_ARGS=()
+if [[ -f "${MERGED_CONFIG}" ]]; then
+    EXTRA_ARGS+=(--override-config "${MERGED_CONFIG}")
+fi
+
+if [[ $# -eq 0 ]]; then
+    set -- bash
+fi
+
+exec devcontainer exec \
+    --workspace-folder "$(pwd)" \
+    "${EXTRA_ARGS[@]}" \
+    "$@"

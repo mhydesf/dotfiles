@@ -1,11 +1,15 @@
 return {
   'nvim-telescope/telescope.nvim',
-  branch = '0.1.x',
   dependencies = {
     'nvim-lua/plenary.nvim',
     'debugloop/telescope-undo.nvim',
     'smartpde/telescope-recent-files',
-    'nvim-telescope/telescope-ui-select.nvim',  -- ← add this
+    'nvim-telescope/telescope-ui-select.nvim',
+    {
+      'nvim-telescope/telescope-fzf-native.nvim',
+      build = 'make',
+      cond = vim.fn.executable('make') == 1,
+    },
   },
   config = function()
     local telescope = require('telescope')

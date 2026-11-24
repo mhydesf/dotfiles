@@ -35,7 +35,16 @@ return {
 
         -- Actions
         map("n", "<leader>bt", gs.toggle_current_line_blame)
+        map("v", "<leader>hs", function()
+          gs.stage_hunk({ vim.fn.line("."), vim.fn.line("v") })
+        end, { desc = "Stage hunk" })
+        map("n", "<leader>hs", gs.stage_hunk, { desc = "Stage hunk" })
+        map("n", "<leader>hu", gs.undo_stage_hunk, { desc = "Undo stage hunk" })
+        map("v", "<leader>hr", function()
+          gs.reset_hunk({ vim.fn.line("v"), vim.fn.line(".") })
+        end, { desc = "Reset hunk" })
+        map("n", "<leader>hr", gs.reset_hunk, { desc = "Reset hunk" })
       end
     }
-	end
+  end
 }

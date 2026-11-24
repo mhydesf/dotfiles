@@ -4,10 +4,21 @@
 
 ---@module 'hl'
 
+-- Aquamarine splits AQ_DRM_DEVICES on ':', so symlinking avoids colons in pci-0000:03:00.0-card
+hl.env("AQ_DRM_DEVICES", "/home/mhyde/.config/hypr/dgpu")
+
 hl.monitor({
-  output   = "DP-1",
-  mode     = "2560x1440@165",
-  position = "0x0",
-  scale    = "auto",
-  vrr = 0,
+  output        = "DP-1",
+  mode          = "3440x1440@239.99",
+  position      = "0x0",
+  scale         = "auto",
+  bitdepth      = 8,
+  vrr           = 0,
+  supports_hdr  = 0,
+})
+
+hl.config({
+  render = {
+    direct_scanout = 1,
+  },
 })

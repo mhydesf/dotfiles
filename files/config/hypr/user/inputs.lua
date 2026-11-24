@@ -6,7 +6,7 @@
 
 hl.config({
   input = {
-    kb_options = "caps:swapescape",
+    kb_options = "",
     kb_layout = "us",
     follow_mouse = 1,
     sensitivity = 0,
